@@ -52,14 +52,14 @@ Connect with all previous epics for comprehensive learning experience:
 - **Error Handling**: Graceful degradation when student implementation incompatible with model architecture
 
 ## Implementation Notes
-- Model download and caching handled automatically by transformers library
-- Attention mechanism replacement must preserve model's forward pass signature
-- Handle tokenization differences gracefully - student implementation uses 6 tokens, model may tokenize differently
-- Dimension adaptation layers required between 64-dim student embeddings and 768-dim model hidden states
-- Memory management critical - clear GPU cache between model versions
-- Support both CPU and CUDA execution with automatic device detection
-- Integration testing against reference attention implementation before student testing
-- Attention weight extraction must handle different attention head configurations
+- **Infrastructure Integration**: Leverage hardware configuration from infrastructure epic for optimal CPU/GPU execution
+- **Robust Model Loading**: Model download with retry logic, offline fallbacks, and caching validation preventing download failures
+- **Attention Architecture Preservation**: Mechanism replacement maintains forward pass signature with comprehensive compatibility testing
+- **Intelligent Adaptation**: Handle tokenization differences and dimension mismatches with automatic adaptation layers and clear error messages
+- **Memory Management**: Proactive GPU cache clearing, memory monitoring, and automatic fallback to CPU execution when memory insufficient
+- **Error Recovery**: Graceful degradation for incompatible implementations with educational feedback and alternative demonstration paths
+- **Performance Monitoring**: Real-time resource tracking with timeout handling and progress reporting during model operations
+- **Integration Validation**: Comprehensive testing against reference attention implementation with automated compatibility verification
 
 ## Success Criteria
 1. distilgpt2 model loads successfully and runs baseline inference with PROMPT_EXAMPLE

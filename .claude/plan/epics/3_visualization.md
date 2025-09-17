@@ -52,13 +52,13 @@ plot_attention_comparison(student_weights: torch.Tensor, reference_weights: torc
 - Supports validation and performance comparison
 
 ## Implementation Notes
-- Input validation must handle common errors: wrong shapes, NaN values, non-normalized weights
-- All functions should gracefully degrade with informative warnings rather than crashes
-- Use figsize=(10, 6) for heatmaps and (12, 8) for multi-panel displays
-- Include colorbar legends with clear attention strength indicators
-- Token labels should be readable at default notebook zoom levels
-- Preserve tensor device (CPU/GPU) without unnecessary transfers
-- Function docstrings must include exact input tensor shape requirements
+- **Comprehensive Input Validation**: Handle tensor shape mismatches, NaN/infinity values, non-normalized weights, and device inconsistencies with specific error guidance
+- **Intelligent Error Recovery**: Functions auto-correct common issues (reshaping, normalization) when possible, and provide clear diagnostic messages when manual correction needed
+- **Performance Optimization**: Efficient rendering with configurable figure sizes, automatic DPI adjustment, and memory-conscious tensor operations
+- **Educational Enhancement**: Color schemes optimized for colorblind accessibility, clear legends with numerical ranges, and token labels with automatic collision detection
+- **Cross-Platform Reliability**: Robust font handling, backend detection, and fallback rendering options for diverse notebook environments
+- **Integration Safeguards**: Device-agnostic tensor handling, consistent variable naming validation, and compatibility testing with downstream epic requirements
+- **Documentation Excellence**: Comprehensive docstrings with exact shape requirements, parameter ranges, and educational usage examples
 
 ## Success Criteria
 1. All four core functions render correctly with previous epic tensor outputs

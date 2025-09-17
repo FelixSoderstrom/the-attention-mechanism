@@ -33,10 +33,15 @@ Create the foundational project structure, environment setup, and core notebook 
 └── setup_venv.sh          # Environment setup script
 ```
 
-### 2. Environment Setup
+### 2. Intelligent Environment Setup
 - `requirements.txt` with pinned versions of all dependencies
-- `setup_venv.sh` script that creates venv, installs requirements, and validates Ollama availability
-- Cross-platform compatibility (Windows/Linux/macOS)
+- `setup_venv.sh` script with hardware detection and adaptive configuration:
+  - **Hardware Assessment**: Detect VRAM (≥8GB), RAM (≥8GB), CPU cores (≥4), and available disk space (≥4GB)
+  - **Ollama Auto-Installation**: If hardware sufficient, automatically download and install Ollama
+  - **Model Auto-Download**: Pull llama3.1:8b model if Ollama installation succeeds
+  - **Fallback Configuration**: If hardware insufficient, prompt for OpenAI API key and configure fallback
+  - **Validation Suite**: Test all installed components and report configuration status
+- Cross-platform compatibility with platform-specific error recovery (Windows/Linux/macOS)
 
 ### 3. Notebook Structure
 - `lesson.ipynb`: 10 numbered sections matching README.md structure, with empty code cells marked `# TODO: Implement`
@@ -55,24 +60,32 @@ Create the foundational project structure, environment setup, and core notebook 
 
 ## Implementation Notes
 - Use relative imports within src/ modules
-- All scripts must handle missing dependencies gracefully
-- Progress JSON must survive notebook restarts
-- Notebook cells should have consistent numbering for evaluation
-- Empty implementation cells must contain helpful TODO comments
+- **Comprehensive Error Handling**: All scripts detect failures, provide specific error messages, and offer automated fixes where possible
+- **Graceful Degradation**: Missing dependencies trigger alternative installation methods or clear manual instructions
+- **State Recovery**: Progress JSON survives notebook restarts, and setup script resumes from interruption points
+- **Validation Feedback**: Each setup step reports success/failure with actionable next steps
+- Notebook cells maintain consistent numbering with error boundaries preventing cascade failures
+- Empty implementation cells contain helpful TODO comments with common pitfall warnings
 
 ## Success Criteria
-1. Virtual environment creates successfully on fresh system
-2. Both notebooks open and run all non-TODO cells without errors
-3. Progress tracking JSON initializes and persists
-4. All src/ modules import successfully
-5. verify.py functions callable from notebook context
-6. Project structure matches specification exactly
-7. No hardcoded paths or system-specific dependencies
+1. Hardware detection accurately assesses system capabilities and selects appropriate LLM provider
+2. Virtual environment creates successfully on fresh system with automatic error recovery
+3. Ollama installation and model download complete automatically on sufficient hardware
+4. OpenAI API key collection and validation succeed on insufficient hardware
+5. Both notebooks open and run all non-TODO cells without errors, with helpful failure messages
+6. Progress tracking JSON initializes and persists through interruptions
+7. All src/ modules import successfully with dependency conflict resolution
+8. verify.py functions callable from notebook context with error boundary protection
+9. Project structure matches specification exactly with platform-specific adaptations
+10. Setup script provides clear status reporting and recovery instructions for all failure modes
 
 ## Validation
 Team-lead must demonstrate:
-- Clean installation on fresh environment
-- Notebook execution through all scaffold cells
-- Progress JSON creation and modification
-- Successful import of all src/ modules
-- verify.py function calls returning expected structure
+- Clean installation on fresh environment across all three platforms
+- Hardware detection correctly identifying system capabilities and configuring appropriate LLM provider
+- Successful Ollama installation and model download on sufficient hardware
+- Graceful API key collection and OpenAI configuration on insufficient hardware
+- Notebook execution through all scaffold cells with error recovery demonstrations
+- Progress JSON persistence through simulated interruptions and restarts
+- Error handling scenarios with automatic and manual recovery paths
+- Setup script resumption from various failure points

@@ -46,12 +46,13 @@ Complete attention head in complete_lesson.ipynb with:
 - Consistent variable naming: query, key, value, attention_weights, attended_values
 
 ## Implementation Notes
-- Use torch.nn.Linear layers for Q/K/V projections to match real transformer architecture
-- Include scaling factor (1/sqrt(64)) as explicit step for educational clarity
-- Softmax must handle edge cases and maintain numerical stability
-- All intermediate tensors should be preserved for visualization in subsequent epic
-- Student cells should fail gracefully with helpful error messages for common mistakes
-- Include dimension comments throughout: # shape: [batch_size, seq_len, d_model]
+- **Architecture Fidelity**: Use torch.nn.Linear layers for Q/K/V projections matching real transformer architecture with proper initialization
+- **Educational Clarity**: Include scaling factor (1/sqrt(64)) as explicit step with mathematical justification and numerical stability discussion
+- **Robust Numerical Handling**: Softmax implementation with overflow protection, underflow handling, and edge case management for educational understanding
+- **Error Prevention**: Student cells include comprehensive input validation, common mistake detection, and guidance toward correct implementations
+- **Integration Continuity**: All intermediate tensors preserved with consistent naming and shape documentation for seamless visualization epic integration
+- **Developer Experience**: Detailed dimension comments, assert statements for shape validation, and helpful error messages guiding students toward correct solutions
+- **Performance Considerations**: Efficient tensor operations with memory usage monitoring and automatic fallbacks for resource-constrained environments
 
 ## Success Criteria
 1. All four implementation cells structured for clear educational progression

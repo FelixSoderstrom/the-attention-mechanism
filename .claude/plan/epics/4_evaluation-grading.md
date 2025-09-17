@@ -46,35 +46,28 @@ Interface with infrastructure epic's progress tracking:
 - Support multiple evaluation runs without data loss
 - Atomic file operations preventing corruption during concurrent access
 
-### 5. LLM Integration Requirements
-**Primary: Ollama Integration**
-- Local Ollama instance running llama3.1:8b or equivalent model
-- Default base_url: http://localhost:11434/v1/chat/completions
-- Evaluation prompts engineered for code assessment consistency
-- Retry logic for API failures with exponential backoff
+### 5. LLM Provider Integration
+**Configuration Inheritance**: Use LLM provider configuration established by infrastructure epic's setup process
+- **Ollama Integration**: Connect to pre-installed local instance with llama3.1:8b model
+- **OpenAI Integration**: Use pre-configured API key from infrastructure setup
+- **Provider Detection**: Automatically detect configured provider and adapt evaluation pipeline
+- **Seamless Switching**: Identical function signatures across both providers with transparent backend switching
 
-**Fallback: OpenAI Integration**
-- OpenAI API as secondary option when Ollama unavailable or insufficient hardware
-- User configuration choice with API key prompt if selected
-- Identical base_url parameter substitution for seamless switching
-- Model: gpt-4-turbo-preview
-
-**Shared Requirements**
-- Response parsing extracting structured evaluation data
-- Identical prompt templates and evaluation criteria across both providers
-- Final fallback to rule-based evaluation if both LLM options fail
+**Evaluation Requirements**
+- Evaluation prompts engineered for code assessment consistency across providers
+- Response parsing extracting structured evaluation data from different API formats
+- Retry logic with exponential backoff for API failures and rate limiting
+- Final fallback to rule-based evaluation if LLM providers fail completely
 
 ## Implementation Notes
-- Evaluation must handle common errors gracefully: syntax errors, wrong tensor shapes, missing imports
-- LLM prompts should include reference implementation context and specific evaluation criteria
-- Tensor comparison functions must account for different but equivalent implementations
-- Evaluation results cached to prevent redundant LLM calls during development
-- Integration with verify.py functions from infrastructure epic maintaining backward compatibility
-- Evaluation audit logs for debugging and fairness validation
-- Support for partial credit on implementations showing partial understanding
-- LLM provider selection through configuration file or environment variable
-- OpenAI API key collection only when user explicitly chooses OpenAI fallback
-- Base URL switching mechanism transparent to evaluation logic
+- **Robust Error Handling**: Evaluation gracefully manages syntax errors, tensor shape mismatches, missing imports, and API failures with specific recovery strategies
+- **LLM Integration**: Provider detection reads infrastructure configuration automatically, with fallback chains preventing evaluation pipeline failure
+- **Evaluation Intelligence**: Prompts include reference implementation context and handle alternative valid solutions with tolerance thresholds
+- **Performance Optimization**: Results cached to prevent redundant LLM calls, with cache invalidation for code changes
+- **Audit Trail**: Comprehensive logging for debugging evaluation decisions and ensuring fairness validation
+- **Partial Credit System**: Sophisticated scoring recognizing partial understanding and common educational misconceptions
+- **Integration Continuity**: Seamless integration with verify.py functions maintaining backward compatibility across epic boundaries
+- **State Management**: Atomic file operations and transaction-safe progress updates preventing data corruption
 
 ## Success Criteria
 1. All four attention implementation sections evaluate correctly against reference solutions
@@ -95,8 +88,8 @@ Team-lead must demonstrate:
 - Progress JSON integrity after multiple evaluation cycles and interruptions
 - LLM evaluation consistency producing stable scores for identical implementations
 - Integration testing with visualization functions from previous epic for evaluation feedback
-- Primary Ollama evaluation system functioning with local LLM
-- OpenAI fallback system activating seamlessly when Ollama unavailable
-- API key prompt mechanism functioning only when OpenAI explicitly selected
+- Automatic provider detection correctly identifying infrastructure-configured LLM backend
+- Seamless evaluation pipeline function regardless of Ollama or OpenAI configuration
+- Error recovery scenarios including API failures, malformed code, and tensor output validation
 - Performance validation completing full notebook evaluation within time constraints
-- Error handling for malformed code and tensor outputs
+- Audit trail generation enabling evaluation decision review and fairness verification
