@@ -17,7 +17,7 @@ A way to prepare an agent with the correct context.
 `product-manager` runs `claude && /prime-[agent-name]` to start a new Claude Code instance for a `team-lead`.
 New agent now has all neccesary context on how to be a `team-lead` and can start implementing their epic.
 
-## Context bundles
+## Agent-logs
 
 Uses Claude Code hooks to log agent tool-calling.
 Useful for orchestrating agents such as `product-manager` and `team-lead`.
@@ -29,7 +29,7 @@ Useful for orchestrating agents such as `product-manager` and `team-lead`.
     - Tool used
     - Path for file
     - Agent name
-- One context bundle per epic
+- One logfile per epic
 - Provides insight to *how* the epic/feature was implemented.
 
 Example:
@@ -248,7 +248,7 @@ Notifies `team-lead` if epic does not qualify as complete.
 #### Workflow
 
 1. Identify all features of the epic
-2. Go through context bundle for epic to gain understanding of what **ALL** subagents did.
+2. Go through  agent-logs for epic to gain understanding of what **ALL** subagents did.
 3. Report back to `team-lead`
 
 
