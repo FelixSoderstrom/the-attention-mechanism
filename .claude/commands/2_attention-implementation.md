@@ -1,3 +1,7 @@
+---
+EPIC_NAME: 2_attention-implementation
+---
+
 # Epic 2: Attention Implementation
 
 ## Epic Definition

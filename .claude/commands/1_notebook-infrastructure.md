@@ -1,7 +1,13 @@
+---
+EPIC_NAME: 1_notebook-infrastructure
+---
+
+
 # Epic 1: Notebook Infrastructure
 
 ## Epic Definition
 Create the foundational project structure, environment setup, and core notebook scaffolding that enables subsequent epics to implement lesson content, visualizations, and evaluation systems.
+
 
 ## Tech Stack & Frameworks
 - **Python 3.10** with virtual environment

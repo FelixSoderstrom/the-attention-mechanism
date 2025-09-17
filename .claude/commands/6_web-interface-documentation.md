@@ -1,3 +1,7 @@
+---
+EPIC_NAME: 6_web-interface-documentation
+---
+
 # Epic 6: Web Interface & Documentation
 
 ## Epic Definition

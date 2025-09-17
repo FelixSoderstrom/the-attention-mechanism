@@ -1,3 +1,7 @@
+---
+EPIC_NAME: 4_evaluation-grading
+---
+
 # Epic 4: Evaluation & Grading
 
 ## Epic Definition

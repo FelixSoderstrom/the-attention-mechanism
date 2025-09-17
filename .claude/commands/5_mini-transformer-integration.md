@@ -1,3 +1,7 @@
+---
+EPIC_NAME: 5_mini-transformer
+---
+
 # Epic 5: Mini-Transformer Integration
 
 ## Epic Definition

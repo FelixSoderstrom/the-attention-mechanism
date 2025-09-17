@@ -1,3 +1,7 @@
+---
+EPIC_NAME: 3_visualization
+---
+
 # Epic 3: Visualization
 
 ## Epic Definition
