@@ -88,7 +88,16 @@ chmod +x "ABSOLUTE/PATH/TO/PROJECT\.claude\log_agent_activity.sh" && chmod +x "A
 
 ---
 
-## Step 3 - Understanding how it works
+## Step 3 - Adjust paths
+Paths are currently hardcoded for my system.
+You might find traces of them in:
+- Custom commands: `.claude/commands/`
+- The settings JSON: `.claude/settings.local.json`
+- Hook-scripts: `.claude/scripts7`
+
+---
+
+## Step 4 - Understanding how it works
 
 ## The process
 
@@ -120,8 +129,9 @@ Naming convention for logfiles are the current EPIC_NAME (dynamically changed by
 Markdown files in `.claude/commands/` that enables user or agent to simply run a file and reference a bunch of instructions.
 Used by the user to start the process and by agents when giving epic-instructions to team-leads (separate claude code instances).
 
+---
 
-# Step 4 - Try it out
+# Step 5 - Try it out
 
 I want to emphasize that you should `import this` and learn that **We are all responsible adults**!
 I take no responsibility for you screwing up. What you're dabbling with is potentially dangerous stuff.
