@@ -10,6 +10,7 @@ mkdir -p "$LOGS_DIR"
 # Read hook input and epic name
 HOOK_INPUT=$(cat)  # Read directly from stdin instead of a file
 EPIC_NAME=$(cat "${PROJECT_DIR}/.claude/current_epic.txt" 2>/dev/null || echo "default")
+AGENT_NAME=$(cat "${PROJECT_DIR}/.claude/current_agent.txt" 2>/dev/null || echo "unknown")
 
 # Capture everything to a debug file for analysis (temporary)
 echo "=== HOOK DEBUG $(date) ===" >> "${LOGS_DIR}/debug.log"
@@ -22,27 +23,39 @@ echo "===================" >> "${LOGS_DIR}/debug.log"
 TOOL_NAME=$(echo "$HOOK_INPUT" | jq -r '.tool_name // "unknown"')
 TOOL_INPUT=$(echo "$HOOK_INPUT" | jq '.tool_input // {}')
 
-# Get path or description
-if [[ "$TOOL_NAME" == "Task" ]]; then
-    PATH_INFO=$(echo "$TOOL_INPUT" | jq -r '.description // "unknown"')
-else
-    PATH_INFO=$(echo "$TOOL_INPUT" | jq -r '.file_path // .path // .notebook_path // "unknown"')
-fi
+# Get current time
+CURRENT_TIME=$(date '+%Y-%m-%d %H:%M:%S')
 
-# Create log entry as simple JSON string
-TOOL_LOWER=$(echo "$TOOL_NAME" | tr '[:upper:]' '[:lower:]')
+# Format log entry based on tool type
 if [[ "$TOOL_NAME" == "Task" ]]; then
-    # Special format for Task tools - focus on agent instantiation
+    # Extract the new agent name from Task tool
     SUBAGENT=$(echo "$TOOL_INPUT" | jq -r '.subagent_type // "unknown"')
-    INSTRUCTION=$(echo "$TOOL_INPUT" | jq -r '.description // "unknown"')
-    LOG_ENTRY="{\"tool\": \"task\", \"agent-instantiated\": \"$SUBAGENT\", \"instruction\": \"$INSTRUCTION\"}"
+    
+    # Format for Task tool
+    LOG_ENTRY="Epic:      $EPIC_NAME
+Time:      $CURRENT_TIME
+New agent: $SUBAGENT"
 else
-    # Standard format for other tools
-    LOG_ENTRY="{\"tool\": \"$TOOL_LOWER\", \"path\": \"$PATH_INFO\"}"
+    # Get file path for other tools
+    PATH_INFO=$(echo "$TOOL_INPUT" | jq -r '.file_path // .path // .notebook_path // "unknown"')
+    
+    # Trim the project directory from the path (handle both Windows and Unix paths)
+    # Remove variations of the project directory path
+    PATH_INFO=$(echo "$PATH_INFO" | sed -e "s|^C:[/\\\\]Users[/\\\\]Felix[/\\\\]Desktop[/\\\\]Code[/\\\\]Skola[/\\\\]AI2[/\\\\]vg-assignment[/\\\\]the-attention-mechanism[/\\\\]||" \
+                                        -e "s|^/c/Users/felix/Desktop/Code/Skola/AI2/vg-assignment/the-attention-mechanism/||" \
+                                        -e "s|^/c/Users/Felix/Desktop/Code/Skola/AI2/vg-assignment/the-attention-mechanism/||")
+    
+    # Format for other tools
+    LOG_ENTRY="Epic:      $EPIC_NAME
+Time:      $CURRENT_TIME
+Tool used: $TOOL_NAME
+Agent:     $AGENT_NAME
+File:      $PATH_INFO"
 fi
 
-# Write to epic-specific logfile
-echo "$LOG_ENTRY" >> "${LOGS_DIR}/${EPIC_NAME}.json"
+# Write to epic-specific logfile with .log extension
+echo "$LOG_ENTRY" >> "${LOGS_DIR}/${EPIC_NAME}.log"
+echo "----------------------------------------" >> "${LOGS_DIR}/${EPIC_NAME}.log"  # Add divider between entries
 
 # Debug output
-echo "Logged to ${EPIC_NAME}.json" >&2
+echo "Logged to ${EPIC_NAME}.log" >&2
