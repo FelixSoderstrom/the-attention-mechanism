@@ -1,3 +1,5 @@
 .ignore
 .claude/settings.local.json
 .claude/logs/*
+venv/*
+.env

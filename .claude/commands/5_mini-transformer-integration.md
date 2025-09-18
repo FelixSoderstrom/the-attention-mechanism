@@ -4,87 +4,69 @@ EPIC_NAME: 5_mini-transformer
 
 # Epic 5: Mini-Transformer Integration
 
+## Prerequisites
+Read `.epic1_complete.json` through `.epic4_complete.json` to understand the system state.
+
 ## Epic Definition
-Integrate student attention implementations with a small pre-trained transformer model, enabling real-world inference comparison between student-built attention mechanisms and production transformer attention. This epic serves as the capstone demonstration where theoretical implementations meet practical transformer architecture, validating student understanding through functional model integration.
+Complete the model integration infrastructure by implementing core functions in `src/model_utils.py` and demonstrating how the reference attention implementation compares to a real production transformer.
 
-## Tech Stack & Frameworks
-- **Transformers library 4.21+** for pre-trained model loading and architecture access
-- **PyTorch 2.0+** for model modification and tensor operations from previous epics
-- **Python 3.10** maintaining project consistency
-- **distilgpt2** as the 82M parameter reference model (small enough for educational use)
-- **Tokenizers** for consistent PROMPT_EXAMPLE processing with model vocabulary
-- **Model surgery utilities** for attention mechanism replacement
+## Suggested Subagents
+This epic will likely require 2-3 specialized agents:
+- **Transformer Integration Specialist**: Expert in transformers library and model manipulation
+- **Model Comparison Specialist**: Expert in comparing and visualizing model differences
 
-## Hard Requirements
+## Natural Delegation Points
+- Model loading and caching → Transformer Integration Specialist
+- Attention replacement and comparison → Model Comparison Specialist
+- Notebook integration → Either agent
 
-### 1. Model Integration Functions
-Core integration functions in src/model_utils.py with exact signatures:
-```python
-load_mini_transformer() -> Tuple[AutoModel, AutoTokenizer]
-extract_attention_layer(model: AutoModel, layer_idx: int = 0) -> nn.Module
-replace_attention_mechanism(model: AutoModel, student_attention: callable, layer_idx: int = 0) -> AutoModel
-run_inference_comparison(model: AutoModel, student_model: AutoModel, prompt: str) -> Dict[str, torch.Tensor]
-extract_attention_weights(model: AutoModel, input_ids: torch.Tensor, layer_idx: int = 0) -> torch.Tensor
-```
+## Core Requirements
 
-### 2. Student Attention Integration
-Bridge student implementations from attention epic with transformer architecture:
-- **Attention Head Wrapper**: Adapt student Q/K/V projections to accept transformer hidden states
-- **Shape Compatibility**: Handle dimension mismatches between 64-dim student implementation and model's 768-dim hidden states
-- **Layer Integration**: Replace first attention layer in distilgpt2 while preserving remaining architecture
-- **Gradient Flow**: Maintain backpropagation capability for educational gradient analysis
+### 1. Simplify model_utils.py
+Implement 3-4 core functions (not 7):
+- `load_mini_transformer()` - Load and cache distilgpt2
+- `compare_attention_implementations()` - Main comparison function
+- `visualize_model_comparison()` - Show differences
+- Optional: `adapt_dimensions()` if needed for 64↔768
 
-### 3. Inference Demonstration
-Run comparative inference using established PROMPT_EXAMPLE:
-- **Tokenization**: Convert "The cat sat on the mat" using model's native tokenizer
-- **Attention Extraction**: Capture attention weights from both original and student-modified models
-- **Output Generation**: Generate next-token predictions showing attention influence on model behavior
-- **Performance Metrics**: Compare inference speed, attention pattern coherence, and output quality
+### 2. Use Reference Module
+Import from `src/reference_attention.py` created by Epic 2 (avoid notebook parsing).
 
-### 4. Comparison Analysis
-Quantitative and qualitative attention pattern comparison:
-- **Attention Similarity**: Cosine similarity and Earth Mover's Distance between attention matrices
-- **Semantic Coherence**: Validate that student attention captures meaningful token relationships
-- **Visualization Integration**: Use comparison plotting functions from visualization epic
-- **Pattern Analysis**: Identify where student implementation differs from production attention
+### 3. Model Integration
+- Load distilgpt2 or similar small model
+- Cache in `cache/models/` directory
+- Compare with reference implementation
+- Handle dimension differences if needed
 
-### 5. Educational Integration Points
-Connect with all previous epics for comprehensive learning experience:
-- **Progress Tracking**: Update lesson completion status via infrastructure epic's JSON system
-- **Evaluation Integration**: Feed comparison results into evaluation epic's LLM assessment
-- **Visualization Pipeline**: Generate side-by-side attention heatmaps using established visualization functions
-- **Error Handling**: Graceful degradation when student implementation incompatible with model architecture
+### 4. Add Demonstration Section
+Add new section to notebooks showing:
+- Model loading
+- Attention comparison
+- Visualization of differences
+Let implementer determine optimal cell organization.
 
-## Implementation Notes
-- **Infrastructure Integration**: Leverage hardware configuration from infrastructure epic for optimal CPU/GPU execution
-- **Robust Model Loading**: Model download with retry logic, offline fallbacks, and caching validation preventing download failures
-- **Attention Architecture Preservation**: Mechanism replacement maintains forward pass signature with comprehensive compatibility testing
-- **Intelligent Adaptation**: Handle tokenization differences and dimension mismatches with automatic adaptation layers and clear error messages
-- **Memory Management**: Proactive GPU cache clearing, memory monitoring, and automatic fallback to CPU execution when memory insufficient
-- **Error Recovery**: Graceful degradation for incompatible implementations with educational feedback and alternative demonstration paths
-- **Performance Monitoring**: Real-time resource tracking with timeout handling and progress reporting during model operations
-- **Integration Validation**: Comprehensive testing against reference attention implementation with automated compatibility verification
+### 5. Keep It Simple
+- This demonstrates the reference implementation
+- No student interaction needed
+- Focus on showing comparison clearly
+
+## Scope
+Demonstrate reference implementation compared to production model. Keep dimension handling simple.
+
+## Handoff Requirements
+Provide to Epic 6:
+- Working model comparison
+- Clear demonstration in notebooks
+- Cached model for offline use
 
 ## Success Criteria
-1. distilgpt2 model loads successfully and runs baseline inference with PROMPT_EXAMPLE
-2. Student attention mechanism integrates without breaking model architecture
-3. Comparative inference produces meaningful attention weight comparisons
-4. Attention similarity metrics provide educational feedback on implementation quality
-5. Visualization integration generates clear side-by-side attention pattern comparisons
-6. Performance remains acceptable - full comparison completes within 90 seconds on standard hardware
-7. Integration gracefully handles common implementation errors
-8. Output demonstrates clear attention influence on model predictions
-9. Results integrate with evaluation epic for comprehensive assessment
-10. Educational value clear - connection demonstrated between implementations and production transformers
+- Core functions implemented in model_utils.py
+- Model loads and caches successfully
+- Comparison demonstrates differences clearly
+- Notebooks updated with demonstration
+- Completion marker `.epic5_complete.json` created
 
-## Validation
-Team-lead must demonstrate:
-- Successful model loading and baseline inference with expected attention patterns
-- Reference implementation integration producing equivalent attention patterns
-- Modified implementations showing measurable attention differences
-- Comparison metrics accurately reflecting attention pattern similarities and differences
-- Integration with visualization epic producing meaningful side-by-side comparisons
-- Performance validation completing full comparison pipeline within time constraints
-- Error handling for incompatible implementations with helpful educational feedback
-- Connection to evaluation epic providing integrated assessment functionality
-- Memory management preventing GPU/CPU resource exhaustion during comparison runs
+## Important Notes
+- Import reference implementation directly from module
+- Let agents decide best approach for dimensions
+- Focus on educational value of comparison

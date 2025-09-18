@@ -4,84 +4,68 @@ EPIC_NAME: 3_visualization
 
 # Epic 3: Visualization
 
+## Prerequisites
+Read `.epic1_complete.json` and `.epic2_complete.json` to get function names, cell positions, and output shapes.
+
 ## Epic Definition
-Implement comprehensive attention visualization functions that transform abstract tensor operations into intuitive visual understanding. This epic creates the visual bridge between student implementations and conceptual comprehension, enabling immediate feedback on attention patterns and preparing comparison infrastructure for subsequent epic integration.
+Implement visualization functions that bring the 4-cell attention implementation from Epic 2 to life through clear, educational visual feedback.
 
-## Tech Stack & Frameworks
-- **Matplotlib 3.5+** for static plots and heatmaps
-- **Plotly 5.0+** for interactive attention flow diagrams  
-- **PyTorch 2.0+** tensor integration from Epic 2 outputs
-- **NumPy** for numerical visualization preprocessing
-- **Python 3.10** maintaining infrastructure consistency
-- **Jupyter Notebook** inline rendering with %matplotlib inline
-- **Seaborn** for enhanced heatmap aesthetics and educational color schemes
+## Suggested Subagents
+This epic will likely require 2 specialized agents:
+- **Visualization Specialist**: Expert in matplotlib and educational data visualization
+- **Notebook Integration Specialist**: Expert in Jupyter notebook integration and testing
 
-## Hard Requirements
+## Natural Delegation Points
+- Visualization function implementation → Visualization Specialist
+- Notebook integration and testing → Notebook Integration Specialist
 
-### 1. Core Visualization Functions
-Four essential functions in src/visualizations.py with exact signatures:
-```python
-plot_attention_heatmap(attention_weights: torch.Tensor, tokens: List[str], title: str = "Attention Weights") -> None
-plot_attention_flow(attention_weights: torch.Tensor, tokens: List[str], threshold: float = 0.1) -> None  
-plot_calculation_steps(query: torch.Tensor, key: torch.Tensor, attention_scores: torch.Tensor, attention_weights: torch.Tensor, tokens: List[str]) -> None
-plot_qkv_projections(embeddings: torch.Tensor, query: torch.Tensor, key: torch.Tensor, value: torch.Tensor, tokens: List[str]) -> None
-```
+## Core Requirements
 
-### 2. PROMPT_EXAMPLE Integration
-- All visualizations must handle exactly 6 tokens: ["The", "cat", "sat", "on", "the", "mat"]
-- Attention weights input shape: [1, 6, 6] or [6, 6] with automatic reshaping
-- Token labels positioned clearly on axes without overlap
-- Consistent color mapping across all visualizations for token relationships
+### 1. Implement 4 Visualization Functions
+Complete these functions in `src/visualizations.py`:
+- `visualize_qkv_projections(embeddings, query, key, value, tokens)`
+- `visualize_attention_scores(attention_scores, tokens)`
+- `visualize_attention_weights(attention_weights, tokens)`
+- `visualize_attended_values(attended_values, attention_weights, tokens)`
 
-### 3. Educational Design Standards
-- **Heatmap**: Blue-white-red gradient with 0.0 (blue) to 1.0 (red) attention strength
-- **Flow diagram**: Directed arrows with thickness proportional to attention weight
-- **Step-by-step**: 2x2 subplot layout showing Q@K.T → scaling → softmax progression
-- **Projections**: Side-by-side embeddings vs Q/K/V transformations with dimension annotations
+### 2. Tensor Shape Handling
+All tensors use batch dimension consistently:
+- attention_scores: [1, 6, 6]
+- attention_weights: [1, 6, 6]
+- attended_values: [1, 6, 64]
+- Handle batch dimension squeezing as needed
 
-### 4. Notebook Integration Points
-- Automatic inline rendering without explicit plt.show() calls
-- Integration with variable names: attention_weights, query, key, value
-- Called immediately after each implementation cell for instant feedback
-- Error handling for malformed tensors with educational error messages
-- Maximum 5-second render time per visualization on standard hardware
+### 3. Display Requirements
+Each function must:
+- Create clear, educational visualizations
+- Include proper labels and titles
+- Show token labels ("The", "cat", "sat", "on", "the", "mat")
+- Call `plt.show()` at the end
+- Return None
 
-### 5. Comparison Infrastructure
-Additional function for Epic 5 mini-transformer integration:
-```python
-plot_attention_comparison(student_weights: torch.Tensor, reference_weights: torch.Tensor, tokens: List[str], labels: List[str] = ["Student", "Reference"]) -> None
-```
-- Side-by-side heatmaps with difference visualization
-- Quantitative similarity metrics displayed
-- Supports validation and performance comparison
+### 4. Integration
+Ensure visualizations:
+- Work with Epic 2's outputs
+- Display inline in notebooks
+- Handle missing data gracefully
 
-## Implementation Notes
-- **Comprehensive Input Validation**: Handle tensor shape mismatches, NaN/infinity values, non-normalized weights, and device inconsistencies with specific error guidance
-- **Intelligent Error Recovery**: Functions auto-correct common issues (reshaping, normalization) when possible, and provide clear diagnostic messages when manual correction needed
-- **Performance Optimization**: Efficient rendering with configurable figure sizes, automatic DPI adjustment, and memory-conscious tensor operations
-- **Educational Enhancement**: Color schemes optimized for colorblind accessibility, clear legends with numerical ranges, and token labels with automatic collision detection
-- **Cross-Platform Reliability**: Robust font handling, backend detection, and fallback rendering options for diverse notebook environments
-- **Integration Safeguards**: Device-agnostic tensor handling, consistent variable naming validation, and compatibility testing with downstream epic requirements
-- **Documentation Excellence**: Comprehensive docstrings with exact shape requirements, parameter ranges, and educational usage examples
+## Scope
+Only implement the 4 required visualization functions.
+
+## Handoff Requirements
+Provide to subsequent epics:
+- Working visualization functions
+- Proper integration with notebooks
+- Clear visual feedback for learning
 
 ## Success Criteria
-1. All four core functions render correctly with previous epic tensor outputs
-2. Attention heatmap clearly shows "cat-sat" and "mat" token relationships for PROMPT_EXAMPLE
-3. Flow diagram filters noise (threshold=0.1) while preserving meaningful connections
-4. Step-by-step visualization demonstrates softmax normalization effect visually
-5. Q/K/V projections show dimensional transformation from 64-dim embeddings
-6. Error handling provides helpful feedback for common implementation mistakes
-7. Visualization outputs integrate seamlessly with next epic evaluation functions
-8. Comparison function foundation supports next epic mini-transformer validation
-9. All plots maintain educational clarity and professional appearance
-10. Render performance stays under 5 seconds per visualization
+- All 4 functions implemented and working
+- Visualizations display correctly in notebooks
+- Token labels visible
+- Graceful error handling
+- Completion marker `.epic3_complete.json` created
 
-## Validation
-Team-lead must demonstrate:
-- Complete visualization suite with previous epic reference implementation outputs
-- Clear attention patterns showing semantic relationships in "The cat sat on the mat"
-- Graceful handling of malformed tensor inputs with helpful error messages
-- Visual confirmation that attention weights sum to 1.0 across sequence dimension
-- Comparison function producing meaningful side-by-side analysis
-- Integration testing with previous epics notebook infrastructure and implementations
-- Performance validation under next epic evaluation scenarios
+## Important Notes
+- Let visualization specialist choose appropriate plot types and colors
+- Focus on educational clarity
+- Ensure consistency with tensor shapes from Epic 2

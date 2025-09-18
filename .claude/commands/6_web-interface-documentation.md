@@ -4,85 +4,85 @@ EPIC_NAME: 6_web-interface-documentation
 
 # Epic 6: Web Interface & Documentation
 
+## Prerequisites
+Verify ALL previous epics are complete by checking `.epic1_complete.json` through `.epic5_complete.json`. If any missing, STOP and report error.
+
 ## Epic Definition
-Create the complete user-facing experience through a professional web interface and comprehensive documentation that guides students from initial setup through lesson completion. This epic transforms the technical implementation from previous epics into a polished, accessible educational tool with clear onboarding, troubleshooting support, and seamless integration validation.
+Create the complete user-facing experience through a professional web interface and comprehensive documentation. This epic is responsible for ALL documentation - previous epics created NO documentation files.
 
-## Tech Stack & Frameworks
-- **HTML5/CSS3** for responsive, accessible web interface design
-- **JavaScript (optional)** for interactive elements and setup validation
-- **Markdown** for structured documentation and README enhancements
-- **Python 3.10** for integration testing and validation scripts
-- **All previous epic dependencies** for end-to-end testing integration
-- **Cross-platform compatibility** testing on Windows/macOS/Linux
+## Suggested Subagents
+This epic will likely require 3 specialized agents:
+- **Web Interface Specialist**: Expert in HTML/CSS/JavaScript for educational interfaces
+- **Documentation Writer**: Expert in technical documentation for educational software
+- **Integration Tester**: Expert in end-to-end testing and validation
 
-## Hard Requirements
+## Natural Delegation Points
+- Web interface creation → Web Interface Specialist
+- Documentation writing → Documentation Writer
+- Testing and validation → Integration Tester
 
-### 1. Professional Web Interface (index.html)
-Complete landing page serving as lesson entry point:
-- **Learning Objectives**: Clear explanation of transformer attention concepts students will master
-- **Prerequisites**: Required knowledge level and technical requirements
-- **Setup Instructions**: Step-by-step environment configuration with copy-paste commands
-- **Lesson Overview**: Approximately 30-minute lesson with section breakdown and expectations
-- **Troubleshooting Section**: Common issues and solutions for Ollama, Python environment, and dependencies
-- **Launch Button**: Direct link to lesson.ipynb with setup validation
+## Core Requirements
 
-### 2. Comprehensive Documentation System
-Enhanced project documentation building on existing README:
-- **Installation Guide**: Detailed setup_venv.sh usage and manual installation alternatives
-- **LLM Configuration**: Ollama vs OpenAI selection guide with hardware requirements
-- **Troubleshooting Database**: Solutions for environment conflicts, GPU issues, model download failures
-- **Technical Specifications**: System requirements, performance expectations, compatibility matrix
-- **Educator Guide**: Instructions for instructors adapting the lesson content
+### 1. Web Interface
+Create professional educational interface:
 
-### 3. End-to-End Integration Testing
-Comprehensive validation ensuring all previous epics function cohesively:
-- **Fresh Environment Testing**: Complete setup-to-completion flow on clean systems
-- **Cross-Platform Validation**: Windows, macOS, Linux compatibility verification
-- **Error Scenario Testing**: Graceful handling of common setup and runtime failures
-- **LLM Provider Testing**: Both Ollama and OpenAI evaluation pathways functional
+**index.html** - Navigation hub:
+- Welcome and project overview
+- Links to all documentation
+- Link to learn.html for lesson preparation
+- Launch button for lesson.ipynb
+- Setup validation status
+- Professional design with:
+  - Dark background (#1a1a1a)
+  - Orange accents (#ff6b35)
+  - White text (#ffffff)
+  - Clean, minimalist layout
 
-### 4. User Experience Flow Optimization
-Streamlined journey from first contact to lesson completion:
-- **Setup Validation**: Pre-flight checks for environment readiness before lesson start
-- **Progress Indicators**: Clear feedback on setup steps and lesson advancement
-- **Error Recovery**: Helpful guidance when students encounter problems during lesson
-- **Completion Feedback**: Final results presentation and next steps recommendations
+**learn.html** - Lesson preparation:
+- Attention mechanism theory
+- Mathematical foundations
+- Visual explanations
+- What students will learn
+- Prerequisites
+- NO overlap with index.html content
 
-### 5. Professional Polish & Presentation
-Educational-grade interface meeting institutional standards:
-- **Visual Design**: Clean, professional styling reflecting educational context
-- **Accessibility**: WCAG 2.1 compliance for screen readers and keyboard navigation
-- **Loading Performance**: Optimized assets and minimal external dependencies
-- **Content Quality**: Professional technical writing with clear, concise explanations
-- **Brand Consistency**: Cohesive presentation matching transformer/AI education standards
+### 2. Documentation Files
+Create 6 comprehensive documentation files:
+- **INSTALL.md**: Installation and setup guide
+- **CONFIGURATION.md**: LLM configuration (Ollama/OpenAI)
+- **TROUBLESHOOTING.md**: Common issues and solutions
+- **TECHNICAL_SPECS.md**: System requirements and specifications
+- **EDUCATOR_GUIDE.md**: Guide for instructors
+- **README.md**: Update with complete project overview
 
-## Implementation Notes
-- **Offline-First Design**: Index.html functions completely offline post-setup with embedded assets, cached resources, and local troubleshooting database
-- **Adaptive Documentation**: Multi-layered content accommodating users from novice to expert with progressive disclosure and contextual help
-- **Comprehensive Testing Framework**: Automated integration scripts validate all epic dependencies with detailed failure reporting and recovery guidance
-- **Intelligent Error Handling**: Context-aware error messages automatically reference specific troubleshooting sections with guided resolution steps
-- **Hardware Compatibility Matrix**: Performance testing across diverse configurations with automatic hardware detection and optimization recommendations
-- **Resilient Resource Management**: Validated external links with local fallbacks, resource mirroring, and graceful degradation for network failures
-- **Proactive Validation**: Setup validation detects configuration conflicts, dependency issues, and environment problems before lesson initiation
-- **Accessibility Excellence**: Full WCAG 2.1 compliance with screen reader optimization, keyboard navigation, and inclusive design principles
+### 3. Integration Testing
+Validate entire system:
+- Setup flow works correctly
+- Notebooks execute properly
+- Evaluation system functions
+- Documentation is accurate
+- Web interface links work
+
+### 4. Professional Polish
+Ensure educational quality:
+- Clear, professional writing
+- Consistent design language
+- Accessibility (WCAG 2.1 AA)
+- Offline functionality after setup
+
+## Scope
+Create ALL user-facing documentation and web interface. Focus on professional educational presentation.
 
 ## Success Criteria
-1. Index.html provides clear, professional first impression with comprehensive lesson overview
-2. Setup instructions enable successful environment configuration across all target platforms
-3. Troubleshooting documentation resolves 90% of common user issues without external support
-4. End-to-end integration testing validates seamless operation of all previous epic components
-6. LLM provider selection and configuration process requires minimal technical expertise
-7. Error handling provides helpful guidance rather than technical error messages
-8. Professional presentation suitable for academic and corporate educational contexts
-9. Complete system functions reliably without internet connection after initial setup
+- index.html serves as effective navigation hub
+- learn.html provides comprehensive lesson preparation
+- All 6 documentation files created and comprehensive
+- Integration testing confirms system works end-to-end
+- Professional presentation suitable for educational institutions
+- Completion marker `.epic6_complete.json` created
 
-## Validation
-Team-lead must demonstrate:
-- Fresh installation and lesson completion
-- Successful lesson flow with both Ollama and OpenAI evaluation configurations
-- Professional web interface meeting educational presentation standards
-- Comprehensive troubleshooting documentation resolving common setup issues
-- Integration testing confirming all previous epics function together seamlessly
-- Error handling providing educational guidance rather than technical debugging
-- Accessibility validation for users with disabilities and diverse technical backgrounds
-- Complete offline functionality after initial setup and model downloads
+## Important Notes
+- This epic creates ALL documentation (previous epics created none)
+- Keep design professional with specified color scheme
+- Ensure clear separation: index=navigation, learn=education
+- Multiple documentation files are manageable for agents
