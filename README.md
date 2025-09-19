@@ -6,7 +6,7 @@ It includes running background sessions of Claude Code with flag `--dangerously-
 The background task is completely headless and you have **NO** control over what Claude Code does.
 Do **NOT** run any custom commands in this repository unless you have read and understood the configured Claude Code settings.
 
-This repo serves as a way to demonstarte how I did it. Not for anyone to copy/paste.
+This repo serves as a way to demonstrate how I did it. Not for anyone to copy/paste.
 
 # Project overview
 
@@ -49,7 +49,7 @@ The configuration utilizes several important components:
 
 **Product-manager:** The main Claude Code session that I am talking to. This agent delegates Epics to Team-leads using background sessions of Claude Code.
 **Team-lead:** A separate session of Claude Code running in the background tasked with completing an Epic. This agent delegates work to subagents.
-**Meta-agent:** The only predetermined agent. Used preemtively to create new subagents.
+**Meta-agent:** The only predetermined agent. Used preemptively to create new subagents.
 **Epic:** A distinct feature in the project. These are handed to team-leads to complete. Epic definitions refer to the instructions given to each team-lead.
 ****
 
@@ -168,7 +168,7 @@ The script also outputs verbose logs shared for all epics (not included in push 
 
 ---
 
-## Preemtive subagent creation
+## Preemptive subagent creation
 
 I actually tried leaving subagents created in attempt 1 for attempt 2 but the team-leads seemed to ignore these agents and created their own instead. Perhaps because of my suggestive instructions on how to use the meta-agent.
 The use of meta-agent was crucial for this process to succeed. Without it we would not have had a centralized agent format. A crucial component for any agentic development, especially when each subagent's prompt is predetermined by a prompt itself.
@@ -186,3 +186,44 @@ Run `tasklist | findstr node` to find node processes running.
 These are not guaranteed to be Claude Code, but if Claude Code is running it's here.
 Use `taskkill //f //pidw [ID]` to kill the processes.
 This might mess up the current epic you were in, so be warned when you try to resume a team-lead mid-epic.
+
+---
+
+# During the Epics
+
+**Agent hand-off**
+Each epic created `.epic[n]_complete.json` for agent hand-off.
+This both made the team-leads and subagents go through the extra step of actually checking a box for completing a task and also served as a hand-off point between different epics.
+
+**Suggesting subagents**
+To prevent the use of the built in general-purpose agent I hinted at what good agents could be to the team-lead in each epic definition.
+I also stated that the meta-agent needed to be used preemptively after thinking about what tasks needs to be done.
+
+**Documentation policy**
+To prevent cluttered codebase I advised against creating documentation.
+This was handled by the last epic. This also ensured that one state of the code got documented and prevented confusion between deprecated documentation or code.
+
+**Technical details**
+Consistent prompt example, tensor shape used throughout all epic definitions.
+Color scheme preference to prevent Toys R Us frontend alá Sonnet (still pretty bad).
+
+---
+
+# Post development
+
+## Epic content validation
+
+Subagent deployed to manually read parts of the codebase and logs to compare with epic definition.
+Multiple versions of this agent deployed. Responded with 100% of epic definitions were implemented.
+
+
+## Student simulation
+
+Subagent simulating a student was deployed and tasked to:
+1. Read documentation
+2. Set up the virtual environment
+3. Complete the lesson
+4. Run evaluation
+Student simulation subagent then reported back to product manager with assessment.
+This caught some bugs and formatting errors that were immediately resolved by product-manager.
+Second pass of student simulation revealed everything went well and critical bugs were fixed.
