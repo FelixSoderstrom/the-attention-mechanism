@@ -45,8 +45,6 @@ A **bad** prompt explains the entire implementation step by step and/or excludes
 ## Prerequisites
 Read `.epic1_complete.json` and `.epic2_complete.json` to get function names, cell positions, and output shapes.
 
-IMPORTANT: Read the log `.claude/logs/3_visualization.log` to continue where you left off.
-
 ## Epic Definition
 Implement visualization functions that bring the 4-cell attention implementation from Epic 2 to life through clear, educational visual feedback.
 
