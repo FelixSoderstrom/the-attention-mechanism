@@ -1,21 +1,22 @@
 # WARNING
 
-Some of the custom commands found in this directory could potentially be **VERY DANGEROUS**
+Some of the custom commands found in this directory could potentially be **VERY DANGEROUS**.
 If you are running Claude Code I **HIGHLY RECOMMEND** you read through the setup I have going on.
 It includes running background sessions of Claude Code with flag `--dangerously-skip-permissions`.
 The background task is completely headless and you have **NO** control over what Claude Code does.
 Do **NOT** run any custom commands in this repository unless you have read and understood the configured Claude Code settings.
 
+This repo serves as a way to demonstarte how I did it. Not for anyone to copy/paste.
+
 # Project overview
 
 This is my assignment for an interactive lesson in the AI/ML engineering course.
-We got to pick our own subject of interactive lessons and I picked 'Transformers: The Attention Mechanism' where my plan was to let student of this course implement their own attention head that we later use to replace a layer in distilgpt2.
+We got to pick our own subject of interactive lessons and I picked 'Transformers: The Attention Mechanism' where my plan was to let students of this lesson implement their own attention head that we later use to replace a layer in distilgpt2.
 
-During the planning stages of the assignment instructions I asked about the expected difficulty of such a task to where my teacher replied:
+When asking about the difficulty of this assignment I got the reply:
 "If it's one-shottable, it's definately too easy and needs adjusting"
 
 I'm perfectly aware that this was not meant to be interpreted as a challenge at all.
-But I reeeally didn't want to do this asssignment.
 
 ---
 
