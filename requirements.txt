@@ -1,0 +1,62 @@
+# Core Jupyter notebook support
+jupyter>=1.0.0
+jupyterlab>=4.0.0
+notebook>=7.0.0
+ipykernel>=6.0.0
+ipython>=8.0.0
+ipywidgets>=8.0.0
+
+# Visualization libraries
+matplotlib>=3.5.0
+seaborn>=0.12.0
+plotly>=5.0.0
+kaleido>=0.2.0,<0.3.0  # Kaleido can have breaking changes
+
+# ML and numerical libraries
+# Note: PyTorch versions depend on Python version
+# For Python 3.13+, you need torch>=2.5.0
+numpy>=1.21.0,<2.0.0  # NumPy 2.0 has breaking changes
+torch>=2.0.0  # Will automatically select compatible version
+torchvision>=0.15.0
+torchaudio>=2.0.0
+
+# Data manipulation and analysis
+pandas>=2.0.0
+scipy>=1.9.0
+
+# LLM integration libraries
+requests>=2.28.0
+openai>=1.0.0
+httpx>=0.23.0
+
+# Educational and progress tracking utilities
+tqdm>=4.64.0
+colorama>=0.4.4
+
+# Development and testing utilities
+pytest>=7.0.0
+black>=22.0.0
+flake8>=6.0.0
+
+# Additional utilities for educational environment
+rich>=13.0.0
+typer>=0.9.0
+
+# For handling configuration files
+pyyaml>=6.0.0
+python-dotenv>=1.0.0
+
+# Image processing (if needed for visualizations)
+Pillow>=10.0.0
+
+# Progress bars and utilities
+alive-progress>=3.0.0
+
+# JSON handling improvements
+orjson>=3.8.0
+
+# Cross-platform path handling
+pathspec>=0.11.0
+
+# Transformer model integration for Epic 5
+transformers>=4.30.0

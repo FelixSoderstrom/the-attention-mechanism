@@ -1,0 +1,66 @@
+{
+  "llm_providers": {
+    "primary": {
+      "provider": "ollama",
+      "base_url": "http://localhost:11434",
+      "models": {
+        "default": "llama3.1:8b",
+        "code_explanation": "codellama:7b",
+        "educational": "llama3.1:8b"
+      },
+      "parameters": {
+        "temperature": 0.7,
+        "max_tokens": 2048,
+        "top_p": 0.9,
+        "stream": false
+      },
+      "timeout": 60,
+      "retry_attempts": 3
+    },
+    "fallback": {
+      "provider": "openai",
+      "base_url": "https://api.openai.com/v1",
+      "models": {
+        "default": "gpt-3.5-turbo",
+        "code_explanation": "gpt-3.5-turbo",
+        "educational": "gpt-3.5-turbo"
+      },
+      "parameters": {
+        "temperature": 0.7,
+        "max_tokens": 2048,
+        "top_p": 0.9,
+        "stream": false
+      },
+      "timeout": 30,
+      "retry_attempts": 2
+    }
+  },
+  "educational_settings": {
+    "explanation_style": "beginner_friendly",
+    "include_code_comments": true,
+    "step_by_step_breakdown": true,
+    "provide_examples": true,
+    "difficulty_level": "intermediate"
+  },
+  "logging": {
+    "enabled": true,
+    "log_level": "INFO",
+    "log_file": "progress/llm_interactions.log",
+    "include_prompts": false,
+    "include_responses": true
+  },
+  "rate_limiting": {
+    "requests_per_minute": 30,
+    "burst_limit": 5
+  },
+  "cache": {
+    "enabled": true,
+    "cache_dir": "progress/.llm_cache",
+    "ttl_seconds": 3600
+  },
+  "prompts": {
+    "attention_explanation": "You are an educational AI helping students understand attention mechanisms. Provide clear, step-by-step explanations with visual descriptions where helpful.",
+    "code_review": "Review the following attention mechanism code and provide educational feedback focusing on understanding rather than optimization.",
+    "concept_check": "Ask a thoughtful question to help the student verify their understanding of the attention mechanism concept just explained."
+  }
+}

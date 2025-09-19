@@ -1,5 +1,13 @@
 .ignore
+
 .claude/settings.local.json
-.claude/logs/*
+.claude/development-process/backup/
+
+__pycache__/
 venv/*
 .env
+
+cache/
+grade/
+progress/.llm_cache/
+progress/llm_interactions.log

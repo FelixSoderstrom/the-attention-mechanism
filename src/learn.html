@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attention Mechanism Theory - Learning Preparation</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <nav class="breadcrumb">
+                    <a href="../index.html">Home</a> > <span>Learning Preparation</span>
+                </nav>
+                <h1 class="main-title">Attention Mechanism Theory</h1>
+                <p class="subtitle">Mathematical Foundations and Learning Preparation</p>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Learning Objectives -->
+            <section class="learning-objectives">
+                <div class="objectives-card">
+                    <h2 class="section-title">
+                        <span class="icon">🎯</span>
+                        Learning Objectives
+                    </h2>
+                    <div class="objectives-grid">
+                        <div class="objective">
+                            <span class="objective-number">1</span>
+                            <div class="objective-content">
+                                <h3>Linear Projections (Q, K, V)</h3>
+                                <p>Understand how input embeddings are transformed into Query, Key, and Value matrices through learned linear transformations.</p>
+                            </div>
+                        </div>
+                        <div class="objective">
+                            <span class="objective-number">2</span>
+                            <div class="objective-content">
+                                <h3>Scaled Dot-Product Attention</h3>
+                                <p>Master the core attention computation: calculating similarity scores between queries and keys with proper scaling.</p>
+                            </div>
+                        </div>
+                        <div class="objective">
+                            <span class="objective-number">3</span>
+                            <div class="objective-content">
+                                <h3>Softmax & Attention Weights</h3>
+                                <p>Learn how raw attention scores are normalized into probability distributions using the softmax function.</p>
+                            </div>
+                        </div>
+                        <div class="objective">
+                            <span class="objective-number">4</span>
+                            <div class="objective-content">
+                                <h3>Value Aggregation</h3>
+                                <p>Understand how attention weights are used to compute weighted combinations of value vectors.</p>
+                            </div>
+                        </div>
+                        <div class="objective">
+                            <span class="objective-number">5</span>
+                            <div class="objective-content">
+                                <h3>Real-World Application</h3>
+                                <p>Connect the educational implementation to production transformer models like GPT and BERT.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Prerequisites -->
+            <section class="prerequisites-section">
+                <div class="prerequisites-card">
+                    <h2 class="section-title">
+                        <span class="icon">📚</span>
+                        Prerequisites
+                    </h2>
+                    <div class="prerequisites-content">
+                        <div class="prereq-category">
+                            <h3>Mathematics</h3>
+                            <ul>
+                                <li>Linear algebra fundamentals (matrix multiplication, vectors)</li>
+                                <li>Basic calculus (derivatives, gradients)</li>
+                                <li>Probability distributions and the softmax function</li>
+                                <li>Understanding of dot products and vector similarity</li>
+                            </ul>
+                        </div>
+                        <div class="prereq-category">
+                            <h3>Programming</h3>
+                            <ul>
+                                <li>Python programming fundamentals</li>
+                                <li>NumPy for numerical operations</li>
+                                <li>Basic PyTorch tensor operations</li>
+                                <li>Jupyter notebook experience</li>
+                            </ul>
+                        </div>
+                        <div class="prereq-category">
+                            <h3>Machine Learning</h3>
+                            <ul>
+                                <li>Neural network basics (forward pass, backpropagation)</li>
+                                <li>Understanding of embeddings and vector representations</li>
+                                <li>Familiarity with deep learning concepts</li>
+                                <li>Basic knowledge of sequence processing</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Theory Overview -->
+            <section class="theory-section">
+                <div class="theory-card">
+                    <h2 class="section-title">
+                        <span class="icon">🧠</span>
+                        What is Attention?
+                    </h2>
+                    <div class="theory-content">
+                        <p class="intro-text">
+                            The attention mechanism is a fundamental component of modern transformer architectures that allows models to dynamically focus on different parts of the input sequence when processing each element. Think of it as a spotlight that can selectively illuminate relevant information.
+                        </p>
+                        
+                        <div class="analogy-box">
+                            <h3>🔦 Real-World Analogy</h3>
+                            <p>
+                                Imagine reading a research paper. When you encounter a technical term, your brain naturally "attends" to:
+                            </p>
+                            <ul>
+                                <li><strong>The current context</strong> - the sentence you're reading</li>
+                                <li><strong>Related information</strong> - definitions from earlier in the paper</li>
+                                <li><strong>Background knowledge</strong> - your existing understanding</li>
+                            </ul>
+                            <p>
+                                Attention mechanisms work similarly, allowing AI models to dynamically focus on relevant parts of their input when making predictions.
+                            </p>
+                        </div>
+
+                        <div class="key-insight">
+                            <h3>💡 Key Insight</h3>
+                            <p>
+                                Instead of processing sequences word-by-word in order (like RNNs), attention allows models to directly access and weight information from any position in the sequence, enabling parallel processing and better handling of long-range dependencies.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Mathematical Foundations -->
+            <section class="math-section">
+                <div class="math-card">
+                    <h2 class="section-title">
+                        <span class="icon">📐</span>
+                        Mathematical Foundations
+                    </h2>
+                    
+                    <div class="math-content">
+                        <div class="math-step">
+                            <h3>Step 1: Linear Projections</h3>
+                            <div class="math-explanation">
+                                <p>Given input embeddings $X \in \mathbb{R}^{n \times d}$ where $n$ is sequence length and $d$ is embedding dimension:</p>
+                                <div class="math-formula">
+                                    $$Q = XW_Q, \quad K = XW_K, \quad V = XW_V$$
+                                </div>
+                                <p>Where $W_Q, W_K, W_V \in \mathbb{R}^{d \times d_k}$ are learned parameter matrices.</p>
+                                
+                                <div class="intuition-box">
+                                    <strong>Intuition:</strong> These projections create specialized representations:
+                                    <ul>
+                                        <li><strong>Q (Query):</strong> "What am I looking for?"</li>
+                                        <li><strong>K (Key):</strong> "What do I contain?"</li>
+                                        <li><strong>V (Value):</strong> "What information can I provide?"</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="math-step">
+                            <h3>Step 2: Attention Score Computation</h3>
+                            <div class="math-explanation">
+                                <p>Compute similarity between queries and keys:</p>
+                                <div class="math-formula">
+                                    $$\text{scores} = \frac{QK^T}{\sqrt{d_k}}$$
+                                </div>
+                                <div class="scaling-explanation">
+                                    <strong>Why scale by $\sqrt{d_k}$?</strong>
+                                    <p>As $d_k$ increases, dot products grow in magnitude, pushing softmax into regions with very small gradients. Scaling keeps the values in a reasonable range for stable training.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="math-step">
+                            <h3>Step 3: Attention Weight Normalization</h3>
+                            <div class="math-explanation">
+                                <p>Convert scores to probabilities using softmax:</p>
+                                <div class="math-formula">
+                                    $$\text{weights}_{ij} = \frac{\exp(\text{scores}_{ij})}{\sum_{k=1}^{n} \exp(\text{scores}_{ik})}$$
+                                </div>
+                                <p>This ensures $\sum_j \text{weights}_{ij} = 1$ for each query position $i$.</p>
+                                
+                                <div class="property-box">
+                                    <strong>Key Properties:</strong>
+                                    <ul>
+                                        <li>All weights are positive: $\text{weights}_{ij} \geq 0$</li>
+                                        <li>Each row sums to 1: $\sum_j \text{weights}_{ij} = 1$</li>
+                                        <li>Higher scores → higher attention weights</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="math-step">
+                            <h3>Step 4: Weighted Value Aggregation</h3>
+                            <div class="math-explanation">
+                                <p>Compute the final output as weighted combination of values:</p>
+                                <div class="math-formula">
+                                    $$\text{output}_i = \sum_{j=1}^{n} \text{weights}_{ij} \cdot V_j$$
+                                </div>
+                                <p>This creates a context-aware representation for each position.</p>
+                            </div>
+                        </div>
+
+                        <div class="complete-formula">
+                            <h3>🎯 Complete Attention Function</h3>
+                            <div class="math-formula">
+                                $$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$$
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Visual Understanding -->
+            <section class="visual-section">
+                <div class="visual-card">
+                    <h2 class="section-title">
+                        <span class="icon">👁️</span>
+                        Visual Understanding
+                    </h2>
+                    
+                    <div class="visual-content">
+                        <div class="attention-diagram">
+                            <h3>Attention Flow Diagram</h3>
+                            <div class="ascii-diagram">
+                                <pre>
+Input Sequence: "The cat sat on the mat"
+      ↓
+  [Embeddings]
+  64-dim vectors
+      ↓
+┌────────────────────────────────────┐
+│   Linear Projections (Step 1)      │
+│                                    │
+│  Q = X·Wq   K = X·Wk   V = X·Wv    │
+│                                    │
+│  [1,6,64]   [1,6,64]   [1,6,64]    │
+└────────────────────────────────────┘
+      ↓
+┌────────────────────────────────────┐
+│   Attention Scores (Step 2)        │
+│                                    │
+│     scores = Q·K^T / √64           │
+│                                    │
+│        [1,6,6] matrix              │
+└────────────────────────────────────┘
+      ↓
+┌────────────────────────────────────┐
+│   Attention Weights (Step 3)       │
+│                                    │
+│   weights = softmax(scores)        │
+│                                    │
+│   Each row sums to 1.0             │
+└────────────────────────────────────┘
+      ↓
+┌────────────────────────────────────┐
+│   Output Generation (Step 4)       │
+│                                    │
+│   output = weights · V             │
+│                                    │
+│   Context-aware representations    │
+└────────────────────────────────────┘
+                </pre>
+                            </div>
+                        </div>
+
+                        <div class="attention-matrix-example">
+                            <h3>Example Attention Pattern</h3>
+                            <p>For the sentence "The cat sat on the mat", here's how the word "sat" might attend to other words:</p>
+                            <div class="attention-heatmap">
+                                <table class="heatmap-table">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>The</th>
+                                            <th>cat</th>
+                                            <th>sat</th>
+                                            <th>on</th>
+                                            <th>the</th>
+                                            <th>mat</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <th>sat</th>
+                                            <td class="low">0.05</td>
+                                            <td class="high">0.40</td>
+                                            <td class="medium">0.25</td>
+                                            <td class="medium">0.15</td>
+                                            <td class="low">0.05</td>
+                                            <td class="medium">0.10</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <p class="heatmap-explanation">
+                                    Notice how "sat" pays most attention to "cat" (the subject) and itself, moderate attention to "on" (the preposition), and less to articles and the object.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Implementation Journey -->
+            <section class="journey-section">
+                <div class="journey-card">
+                    <h2 class="section-title">
+                        <span class="icon">🛤️</span>
+                        Implementation Journey
+                    </h2>
+                    
+                    <div class="journey-content">
+                        <div class="journey-step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h3>Section 1: Linear Projections</h3>
+                                <p>You'll implement the <code>create_qkv_projections</code> function to transform input embeddings into Query, Key, and Value matrices using PyTorch linear layers.</p>
+                                <div class="code-preview">
+                                    <strong>Key Challenge:</strong> Understanding tensor shapes and matrix multiplication
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="journey-step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h3>Section 2: Attention Score Computation</h3>
+                                <p>Build the <code>compute_attention_scores</code> function to calculate similarity scores between queries and keys with proper scaling.</p>
+                                <div class="code-preview">
+                                    <strong>Key Challenge:</strong> Implementing scaled dot-product attention correctly
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="journey-step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h3>Section 3: Softmax Normalization</h3>
+                                <p>Create the <code>compute_attention_weights</code> function to convert raw scores into probability distributions.</p>
+                                <div class="code-preview">
+                                    <strong>Key Challenge:</strong> Understanding softmax and probability normalization
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="journey-step">
+                            <div class="step-number">4</div>
+                            <div class="step-content">
+                                <h3>Section 4: Value Aggregation</h3>
+                                <p>Implement <code>aggregate_values</code> to compute weighted combinations of value vectors using attention weights.</p>
+                                <div class="code-preview">
+                                    <strong>Key Challenge:</strong> Combining attention weights with values correctly
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="journey-step">
+                            <div class="step-number">5</div>
+                            <div class="step-content">
+                                <h3>Section 5: Real-World Connection</h3>
+                                <p>Explore how your implementation relates to production transformer models like GPT-2 and DistilGPT-2.</p>
+                                <div class="code-preview">
+                                    <strong>Key Insight:</strong> Your 64-dim implementation scales to 768-dim production models
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Getting Started -->
+            <section class="getting-started">
+                <div class="getting-started-card">
+                    <h2 class="section-title">
+                        <span class="icon">🚀</span>
+                        Ready to Start?
+                    </h2>
+                    <div class="getting-started-content">
+                        <p>You're now prepared to dive into the interactive implementation. Here's your roadmap:</p>
+                        
+                        <div class="action-grid">
+                            <div class="action-item">
+                                <span class="action-icon">📖</span>
+                                <div class="action-content">
+                                    <h3>1. Review This Page</h3>
+                                    <p>Make sure you understand the mathematical foundations and overall flow.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="action-item">
+                                <span class="action-icon">💻</span>
+                                <div class="action-content">
+                                    <h3>2. Start the Notebook</h3>
+                                    <p>Open the student notebook and begin with Section 1: Linear Projections.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="action-item">
+                                <span class="action-icon">🔍</span>
+                                <div class="action-content">
+                                    <h3>3. Use Visualizations</h3>
+                                    <p>Run the visualization functions to see your implementations in action.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="action-item">
+                                <span class="action-icon">✅</span>
+                                <div class="action-content">
+                                    <h3>4. Validate Your Work</h3>
+                                    <p>Use the evaluation system to check your implementations and get feedback.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="launch-notebook-section">
+                            <a href="../index.html" class="btn btn-secondary">← Back to Home</a>
+                            <button class="btn btn-primary" onclick="launchFromLearn()">
+                                🚀 Launch Student Notebook
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2024 Attention Mechanism Educational Project. Built for learning and education.</p>
+        </footer>
+    </div>
+
+    <script>
+        function launchFromLearn() {
+            // Try to launch the student notebook
+            fetch('http://localhost:8888/api/contents')
+                .then(response => {
+                    if (response.ok) {
+                        window.open('http://localhost:8888/notebooks/lesson.ipynb', '_blank');
+                    } else {
+                        throw new Error('Jupyter not accessible');
+                    }
+                })
+                .catch(error => {
+                    // Redirect to main page where they can start Jupyter
+                    window.location.href = '../index.html#jupyter-setup';
+                });
+        }
+
+        // Smooth scrolling for anchor links
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle anchor link from index.html
+            if (window.location.hash === '#jupyter-setup') {
+                document.querySelector('.getting-started').scrollIntoView({ 
+                    behavior: 'smooth' 
+                });
+            }
+        });
+    </script>
+</body>
+</html>
