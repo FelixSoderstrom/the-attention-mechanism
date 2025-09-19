@@ -82,11 +82,29 @@ CUSTOM_COMMAND = /6_web-interface-documentation
 
 ## After the epics
 
-Read **all** JSON logfiles in `.claude/logs/` - They have been named after the EPIC_NAME during the epic.
-The logfiles reveal how the team-lead delegated work and how the subagents implemented features.
-Analyze these logs to gain understanding of the entire process.
+1. Read logfiles for **all** epics `.claude/logs/EPIC_NAME.log`
+2. Create and deploy a subagent that validates all features were implemented for each epic
+    This subagent should read: `.claude/commands/CUSTOM_COMMAND.md` for epic definition, `.claude/logs/EPIC_NAME.log` to understand dev process, relevant files mentioned in EPIC_DEFINITION and logs.
+    Subagent reports back to product-manager.
+    Each epic requires at least one subagent to be deployed.
+    If feature is missing:
+        Edit custom command-file for an epic to include missing features.
+        Deploy the team-lead again.
+3. Create and deploy simulated student subagent.
+    This subagent should complete the following tasks in separate deployments:
+        1. Install dependencies
+        2. Complete the interactive notebook
+        3. Evaluate the process
+    Each deployment of the student subagent should report back on the experience of taking the course and suggest improvements.
+4. Note down simulated students feedback in a comprehensive MD: `assessment.md`
+5. Fix all points listed in `assessment.md`.
+    Do this yourself without the use of subagents.
+6. Run student simulation again.
+7. Report back to HUMAN. End.
 
 
 # Output
 
-Summary of how the agents worked - described epic by epic.
+- Summary of how the agents worked - described epic by epic.
+- Any issues resolved
+- Wether or not the process failed or succeeded

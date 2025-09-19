@@ -60,17 +60,20 @@ done
 
 # Additional checks for suspicious rm commands
 if echo "$command" | grep -qE "rm.*-r.*-f|rm.*-rf|rm.*-fr"; then
+    # Allow safe venv operations
+    if echo "$command" | grep -qE "rm -rf venv$|rm -rf venv/$|rm -rf ./venv$|rm -rf ./venv/$"; then
+        echo "✅ Allowing venv cleanup: '$command'" >&2
     # Check if it's trying to delete important directories
-    if echo "$command" | grep -qE "\s+/\s*$|\s+~\s*$|\s+\$HOME|\s+C:\\|\s+\*\s*$"; then
+    elif echo "$command" | grep -qE "\s+/\s*$|\s+~\s*$|\s+\$HOME|\s+C:\\|\s+\*\s*$"; then
         echo "🚨 SECURITY VIOLATION: Blocked potentially dangerous rm command '$command'" >&2
         echo "   Reason: Recursive force deletion of system directories detected." >&2
         echo "   If this is intentional, please run it manually outside of Claude Code." >&2
         exit 2
+    else
+        # Warn about any recursive force deletions but allow them if they seem targeted
+        echo "⚠️  Warning: Recursive force deletion detected: '$command'" >&2
+        echo "   Please verify this is intentional." >&2
     fi
-    
-    # Warn about any recursive force deletions but allow them if they seem targeted
-    echo "⚠️  Warning: Recursive force deletion detected: '$command'" >&2
-    echo "   Please verify this is intentional." >&2
 fi
 
 # Check for commands that might be downloading and executing code
