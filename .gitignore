@@ -1,7 +1,4 @@
-.ignore
-
-.claude/settings.local.json
-.claude/development-process/backup/
+.claude
 
 __pycache__/
 venv/*
