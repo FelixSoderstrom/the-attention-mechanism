@@ -123,11 +123,11 @@ def evaluate_attention_output(output: torch.Tensor, attention_weights: torch.Ten
         
         # Basic metrics
         results['metrics'] = {
-            'output_mean': float(torch.mean(output)),
-            'output_std': float(torch.std(output)),
-            'weights_entropy': float(calculate_attention_entropy(attention_weights)),
-            'max_attention_weight': float(torch.max(attention_weights)),
-            'min_attention_weight': float(torch.min(attention_weights))
+            'output_mean': float(torch.mean(output).detach()),
+            'output_std': float(torch.std(output).detach()),
+            'weights_entropy': float(calculate_attention_entropy(attention_weights).detach()),
+            'max_attention_weight': float(torch.max(attention_weights).detach()),
+            'min_attention_weight': float(torch.min(attention_weights).detach())
         }
         
         # Generate feedback with appropriate symbols
