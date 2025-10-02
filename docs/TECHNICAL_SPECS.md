@@ -83,7 +83,6 @@ attention-mechanism/
 │   └── llm_integration.py      # LLM provider interface
 ├── notebooks/
 │   ├── lesson.ipynb            # Interactive student notebook
-│   ├── complete_lesson.ipynb   # Complete reference implementation
 │   └── epic3_validation.ipynb  # Integration testing notebook
 ├── configuration/
 │   ├── .llm_config.json        # LLM provider configuration
