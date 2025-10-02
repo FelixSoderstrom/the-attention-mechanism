@@ -55,7 +55,7 @@ This document provides comprehensive technical specifications for the Attention 
 | **Linux** | Ubuntu 18.04 LTS | Ubuntu 22.04 LTS | Most distributions supported |
 
 **Python Requirements:**
-- **Version**: Python 3.8+ (Python 3.13.1 tested and recommended)
+- **Version**: Python 3.8+ (Python 3.10.6 and 3.13.5 tested)
 - **Architecture**: 64-bit (required for some ML libraries)
 - **Standard Library**: Complete installation with all modules
 - **Package Manager**: pip 21.0+ (bundled with Python 3.8+)
@@ -73,26 +73,32 @@ This document provides comprehensive technical specifications for the Attention 
 ### Project Structure
 
 ```
-attention-mechanism/
-├── src/                          # Core implementation modules
-│   ├── __init__.py              # Package initialization
+the-attention-mechanism/
+├── src/                        # Core implementation modules
+│   ├── __init__.py             # Package initialization
 │   ├── visualizations.py       # Educational visualization functions
 │   ├── evaluation.py           # LLM-powered evaluation system
 │   ├── model_utils.py          # Transformer integration utilities
 │   ├── reference_attention.py  # Complete attention implementations
-│   └── llm_integration.py      # LLM provider interface
-├── notebooks/
-│   ├── lesson.ipynb            # Interactive student notebook
-│   └── epic3_validation.ipynb  # Integration testing notebook
-├── configuration/
-│   ├── .llm_config.json        # LLM provider configuration
-│   ├── requirements.txt        # Python dependencies
-│   └── setup_venv.sh           # Automated setup script
-├── data/
-│   ├── progress/               # Progress tracking and logs
-│   ├── grade/                  # Evaluation outputs
-│   └── cache/                  # Model and response caching
-└── documentation/              # All documentation files
+│   ├── llm_integration.py      # LLM provider interface
+│   ├── notebook_executor.py    # Notebook execution and context management
+│   ├── display_utils.py        # Display and formatting utilities
+│   ├── learn.html              # Web interface for learning
+│   └── styles.css              # Styling for web interface
+├── docs/                       # Documentation files
+├── progress/                   # Progress tracking and LLM cache
+│   └── .llm_cache/            # Cached LLM responses
+├── grade/                      # Evaluation outputs and results
+├── cache/                      # Model and response caching
+│   └── models/                # Transformer model cache
+├── venv/                       # Virtual environment (platform-specific)
+├── lesson.ipynb                # Interactive student notebook
+├── .llm_config.json           # LLM provider configuration
+├── requirements.txt            # Python dependencies
+├── setup_venv.sh              # Automated setup script
+├── README.md                  # Project documentation
+├── index.html                 # Web interface entry point
+└── .gitignore                 # Git ignore configuration
 ```
 
 ### Core Modules
@@ -124,6 +130,10 @@ attention-mechanism/
   - `validate_tensor_output()` - Mathematical correctness checking
   - `grade_notebook()` - Complete notebook evaluation
   - `generate_feedback()` - Educational feedback generation
+  - `run_notebook_evaluation()` - Main user-facing evaluation function
+  - `check_implementation_completeness()` - Implementation status checker
+  - `generate_progress_report()` - Progress tracking and reporting
+  - `benchmark_implementation()` - Performance testing
 - **Dependencies**: LLM integration, reference implementations
 - **Scalability**: Handles 4 attention sections with detailed analysis
 
@@ -140,7 +150,26 @@ attention-mechanism/
   - `compare_attention_implementations()` - Educational vs production comparison
   - `visualize_model_comparison()` - Comparative visualizations
   - `adapt_dimensions()` - Dimension handling utilities
+  - `tokenize_text()` - Text tokenization utilities
+  - `create_embeddings()` - Embedding generation
+  - `positional_encoding()` - Positional encoding implementation
 - **Models**: DistilGPT-2 (66M parameters) as primary example
+
+**6. Notebook Execution (`src/notebook_executor.py`)**
+- **Purpose**: Context-aware notebook execution and testing
+- **Functions**:
+  - `NotebookExecutor` class - Main execution framework
+  - `validate_context_for_function()` - Context validation
+  - `_build_test_context()` - Test environment setup
+  - `_run_function_tests()` - Function-specific testing
+- **Dependencies**: Jupyter, evaluation system
+
+**7. Display Utilities (`src/display_utils.py`)**
+- **Purpose**: HTML display and formatting for educational output
+- **Functions**:
+  - `test_display()` - Display functionality testing
+  - HTML generation and formatting utilities
+- **Dependencies**: IPython display, HTML/CSS integration
 
 ### Data Flow Architecture
 
@@ -166,27 +195,27 @@ graph TD
 
 **Execution Time Benchmarks** (on recommended hardware):
 
-| Operation | Time | Notes |
-|-----------|------|--------|
-| QKV Projections | <1ms | For 6 tokens, 64 dimensions |
-| Attention Scores | <1ms | 6×6 attention matrix |
-| Softmax Weights | <1ms | Normalization step |
-| Value Aggregation | <1ms | Final output computation |
-| Complete Attention | <5ms | Full mechanism end-to-end |
-| Visualization Generation | 100-500ms | Per plot |
-| LLM Evaluation | 2-5s | Per function evaluation |
-| Transformer Loading | 5-15s | First time (cached afterward) |
+| Operation                | Time      | Notes                         |
+|--------------------------|-----------|-------------------------------|
+| QKV Projections          | 1-5ms     | For 6 tokens, 64 dimensions   |
+| Attention Scores         | 1-2ms     | 6×6 attention matrix          |
+| Softmax Weights          | <1ms      | Normalization step            |
+| Value Aggregation        | <1ms      | Final output computation      |
+| Complete Attention       | 5-15ms    | Full mechanism end-to-end     |
+| Visualization Generation | 100-500ms | Per plot                      |
+| LLM Evaluation           | 3-15s     | Varies by provider and model  |
+| Transformer Loading      | 5-15s     | First time (cached afterward) |
 
 **Memory Usage Profile:**
 
-| Component | Peak Memory | Steady State |
-|-----------|-------------|--------------|
-| Base Python + Jupyter | 150 MB | 100 MB |
-| PyTorch + Dependencies | 300 MB | 200 MB |
-| Attention Tensors | 10 MB | 5 MB |
-| Transformer Model | 500 MB | 300 MB |
-| Visualization Buffer | 50 MB | 10 MB |
-| **Total System** | **1.0 GB** | **615 MB** |
+| Component              | Peak Memory | Steady State |
+|------------------------|-------------|--------------|
+| Base Python + Jupyter  | 150 MB      | 100 MB       |
+| PyTorch + Dependencies | 300 MB      | 200 MB       |
+| Attention Tensors      | 1-5 MB      | <1 MB        |
+| Transformer Model      | 500 MB      | 300 MB       |
+| Visualization Buffer   | 50 MB       | 10 MB        |
+| **Total System**       | **0.8-1.2 GB** | **~600 MB** |
 
 ### Scalability and Limits
 
@@ -194,7 +223,7 @@ graph TD
 - **Current**: Optimized for 6 tokens ("The cat sat on the mat")
 - **Tested**: Up to 100 tokens with acceptable performance
 - **Theoretical**: O(n²) memory scaling with sequence length
-- **Practical Limit**: ~1000 tokens on recommended hardware
+- **Practical Limit**: 100-200 tokens for educational implementation on recommended hardware
 
 **Batch Size Scaling:**
 - **Current**: Single-batch processing for educational clarity
@@ -221,16 +250,17 @@ graph TD
 **OpenAI (Fallback Provider):**
 - **Connection**: HTTPS to api.openai.com
 - **Protocol**: JSON over HTTP/1.1 with TLS 1.2+
-- **Authentication**: Bearer token (API key)
-- **Rate Limiting**: 10 requests/minute (configurable)
+- **Authentication**: Bearer token (API key via OPENAI_API_KEY environment variable)
+- **Rate Limiting**: 30 requests/minute (global rate limiter, configurable)
 - **Timeout**: 30 seconds per request
 - **Retry Logic**: 2 attempts with exponential backoff
 
 **Caching System:**
 - **Local Cache**: File-based caching in `progress/.llm_cache/`
-- **Cache Size**: ~10 MB typical, 100 MB maximum
-- **TTL**: 1 hour default (configurable)
+- **Cache Size**: No size limits enforced (TTL-based expiration only)
+- **TTL**: 1 hour default (3600 seconds, configurable)
 - **Cache Key**: Hash of prompt + parameters
+- **Note**: Cache uses time-based expiration without size management
 
 ### Jupyter Notebook Integration
 
@@ -382,16 +412,18 @@ graph TD
 - **ERROR**: Failures requiring attention
 
 **Log Files:**
-- **LLM Interactions**: `progress/llm_interactions.log`
-- **Evaluation Results**: `grade/attempt_*/evaluation.log`
+- **LLM Cache**: JSON files in `progress/.llm_cache/` with cached responses
+- **Development Logs**: `.claude/logs/debug.log` and `.claude/logs/manual_development.log`
+- **Evaluation Results**: Stored in `grade/attempt_*/` directories with JSON outputs
 - **System Status**: Console output during notebook execution
 
 ### Diagnostic Tools
 
 **Built-in Test Suite:**
-- **Integration Tests**: `test_epic3_integration.py`, `test_epic4_integration.py`, `test_epic5_integration.py`
-- **System Validation**: Environment and dependency checking
-- **Performance Benchmarks**: Execution time and memory usage validation
+- **Evaluation Functions**: Comprehensive testing via `evaluation.py` module
+- **Test Functions**: `test_llm_integration()` in `llm_integration.py`, `test_display()` in `display_utils.py`
+- **System Validation**: Context-aware testing through `NotebookExecutor` class
+- **Performance Benchmarks**: `benchmark_implementation()` function for execution time and memory usage
 
 **Configuration Validation:**
 - **JSON Schema**: Configuration file format validation

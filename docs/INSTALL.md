@@ -6,31 +6,39 @@ This guide provides comprehensive instructions for setting up the Attention Mech
 
 ## System Requirements
 
-### Minimum Requirements
-- **Operating System**: Windows 10+, macOS 10.14+, or Linux (Ubuntu 18.04+ recommended)
-- **Python**: Version 3.8 or higher (Python 3.13.1 tested and recommended)
-- **RAM**: 4GB minimum, 8GB recommended for transformer model loading
-- **Storage**: 2GB free space (additional 1GB for cached models)
-- **Internet**: Required for initial setup and LLM integration
+For detailed hardware and software requirements, see [TECHNICAL_SPECS.md](TECHNICAL_SPECS.md).
 
-### Recommended Specifications
-- **Python**: 3.13.1 (latest tested version)
-- **RAM**: 8GB+ for optimal performance with transformer models
-- **Storage**: 5GB+ for comfortable development environment
-- **GPU**: Optional - PyTorch will use CUDA if available
+**Quick Requirements:**
+- **Python**: 3.8-3.12 (auto-detection) or 3.13+ with explicit path
+- **RAM**: 4GB minimum, 8GB recommended
+- **Storage**: 5GB free space recommended
+- **OS**: Windows 10+, macOS 10.14+, or Linux (Ubuntu 18.04+)
 
 ## Quick Start (Automated Setup)
 
 The project includes an automated setup script that handles most installation steps:
 
-### Windows (Git Bash/WSL)
+### Using the Setup Script
+
+**Auto-detection (works for Python 3.8-3.12):**
 ```bash
-bash setup_venv.sh
+./setup_venv.sh
 ```
 
-### Linux/macOS
+**For Python 3.13+ or specific Python version (requires full path):**
 ```bash
-bash setup_venv.sh
+# Linux/macOS
+./setup_venv.sh /usr/bin/python3.13
+./setup_venv.sh /usr/local/bin/python3.10
+
+# Windows
+./setup_venv.sh C:/Python313/python.exe
+./setup_venv.sh C:/Python310/python.exe
+```
+
+**Get help:**
+```bash
+./setup_venv.sh --help
 ```
 
 The setup script will:
@@ -39,6 +47,8 @@ The setup script will:
 3. Install all dependencies from `requirements.txt`
 4. Create necessary directory structure
 5. Validate installation
+
+**Note:** The script accepts both full paths to Python executables and command names from PATH when using custom Python specification.
 
 ## Manual Installation Steps
 
@@ -86,26 +96,17 @@ With virtual environment activated, install all dependencies:
 pip install -r requirements.txt
 ```
 
-**Key packages installed:**
-- **Jupyter Environment**: `jupyter`, `jupyterlab`, `notebook`
-- **Machine Learning**: `torch`, `transformers`, `numpy`
-- **Visualization**: `matplotlib`, `seaborn`, `plotly`
-- **LLM Integration**: `openai`, `requests`, `httpx`
-- **Educational Tools**: `tqdm`, `rich`, `colorama`
+**Key packages installed (subset of 25+ total packages):**
+- **Jupyter Environment**: `jupyter`, `jupyterlab`, `notebook`, `ipykernel`, `ipywidgets`
+- **Machine Learning**: `torch`, `transformers`, `numpy`, `pandas`, `scipy`
+- **Visualization**: `matplotlib`, `seaborn`, `plotly`, `pillow`
+- **LLM Integration**: `openai`, `requests`, `httpx`, `python-dotenv`
+- **Educational Tools**: `tqdm`, `rich`, `colorama`, `alive-progress`
+- **Development Tools**: `pytest`, `black`, `flake8`, `typer`
 
-### 4. Directory Structure Creation
+### 4. Directory Structure
 
-The setup creates these directories (auto-created if missing):
-```
-project-root/
-├── src/                    # Source modules
-├── progress/               # Progress tracking
-├── grade/                  # Evaluation outputs
-├── cache/                  # Model and data cache
-│   └── models/            # Transformer model cache
-├── venv/                  # Virtual environment
-└── .llm_cache/            # LLM response cache
-```
+The setup script automatically creates necessary directories. For full project structure details, see [TECHNICAL_SPECS.md](TECHNICAL_SPECS.md#project-structure).
 
 ### 5. Installation Validation
 
@@ -126,6 +127,25 @@ jupyter --version
 jupyter notebook
 # Should open browser to http://localhost:8888
 ```
+
+## Python Version Compatibility
+
+### Supported Python Versions
+
+| Python Version | PyTorch Version | NumPy Version   | Status          | Notes |
+|----------------|-----------------|-----------------|-----------------|--------|
+| 3.8            | 2.0.0+          | 1.21.0 - 1.24.4 | Fully Supported | Auto-detection works |
+| 3.9            | 2.0.0+          | 1.21.0 - 1.26.4 | Fully Supported | Auto-detection works |
+| 3.10           | 2.0.0+          | 1.21.0 - 1.26.4 | Fully Supported | Auto-detection works |
+| 3.11           | 2.1.0+          | 1.23.0 - 1.26.4 | Fully Supported | Auto-detection works |
+| 3.12           | 2.2.0+          | 1.26.0 - 1.26.4 | Fully Supported | Auto-detection works |
+| 3.13           | 2.5.0+          | 1.26.0+         | Fully Supported | Requires explicit path in setup script |
+
+**Important Notes:**
+- Python 3.8-3.12 work with auto-detection in setup script
+- Python 3.13+ requires explicit path: `./setup_venv.sh /usr/bin/python3.13`
+- The requirements.txt uses flexible version ranges for compatibility
+- NumPy < 2.0.0 constraint due to breaking API changes in NumPy 2.0
 
 ## Platform-Specific Instructions
 
@@ -175,7 +195,8 @@ pip install -r requirements.txt
 ```bash
 # Install Python and pip
 sudo apt update
-sudo apt install python3.13 python3.13-venv python3-pip
+sudo apt install python3.13 python3.13-dev python3-pip
+# Note: python3.13 may require adding a PPA on older Ubuntu versions
 
 # Setup project
 python3 -m venv venv
@@ -185,41 +206,18 @@ pip install -r requirements.txt
 
 **CentOS/RHEL/Fedora:**
 ```bash
-# Install Python
-sudo dnf install python3.13 python3-pip python3-venv
+# Install Python (Fedora/recent versions)
+sudo dnf install python3.13 python3-pip python3-devel
+
+# For older RHEL/CentOS versions, use yum:
+# sudo yum install python3 python3-pip python3-devel
 
 # Setup project (same as Ubuntu)
 ```
 
 ## LLM Integration Setup
 
-The project supports both Ollama and OpenAI for educational LLM features:
-
-### Ollama Setup (Primary, Free)
-
-1. **Install Ollama**: Download from [ollama.ai](https://ollama.ai)
-2. **Start Ollama service**: 
-   ```bash
-   ollama serve
-   ```
-3. **Pull educational model**:
-   ```bash
-   ollama pull llama3.1:8b
-   ```
-
-### OpenAI Setup (Fallback)
-
-1. **Get API key**: Sign up at [openai.com](https://openai.com)
-2. **Set environment variable**:
-   ```bash
-   export OPENAI_API_KEY="your-api-key-here"
-   ```
-3. **Or create `.env` file**:
-   ```
-   OPENAI_API_KEY=your-api-key-here
-   ```
-
-The system automatically falls back to OpenAI if Ollama is unavailable.
+For LLM configuration (Ollama and OpenAI setup), see [CONFIGURATION.md](CONFIGURATION.md).
 
 ## Verification and Testing
 
@@ -243,15 +241,15 @@ jupyter notebook
 # Should open browser and show project files
 ```
 
-### 3. Full System Test
-Run the comprehensive test suite:
+### 3. Evaluation System Test
+The project uses an integrated evaluation system:
 ```bash
-python test_epic3_integration.py
-python test_epic4_integration.py  
-python test_epic5_integration.py
-```
+# Test the evaluation system
+python -c "from src.evaluation import LLMEvaluator; print('Evaluation system available')"
 
-All tests should pass, indicating a complete installation.
+# The evaluation system is integrated into the lesson.ipynb notebook
+# and provides automated feedback on attention mechanism implementations
+```
 
 ## Next Steps
 

@@ -41,27 +41,27 @@ The project follows a carefully designed **"Intuition → Mathematics → Implem
 
 **Course Structure (15-week semester):**
 
-| Week | Topic | Activity | Assessment |
-|------|-------|----------|------------|
-| 1-2 | Neural Network Foundations | Review linear layers, activations | Quiz on fundamentals |
-| 3-4 | Sequence Processing Basics | RNNs, sequence-to-sequence | Project: Simple RNN |
-| 5-6 | **Attention Introduction** | Project Section 1-2 | Implementation checkpoint |
-| 7-8 | **Attention Mechanics** | Project Section 3-4 | Implementation checkpoint |
-| 9-10 | **Transformer Architecture** | Project Section 5 | Complete attention project |
-| 11-12 | Advanced Transformers | Multi-head, positional encoding | Research assignment |
-| 13-14 | Applications | BERT, GPT, real-world use cases | Final project proposal |
-| 15 | Final Projects | Student presentations | Final project submission |
+| Week  | Topic                        | Activity                          | Assessment                 |
+|-------|------------------------------|-----------------------------------|----------------------------|
+| 1-2   | Neural Network Foundations   | Review linear layers, activations | Quiz on fundamentals       |
+| 3-4   | Sequence Processing Basics   | RNNs, sequence-to-sequence        | Project: Simple RNN        |
+| 5-6   | **Attention Introduction**   | Project Functions 1-2             | Implementation checkpoint  |
+| 7-8   | **Attention Mechanics**      | Project Functions 3-4             | Implementation checkpoint  |
+| 9-10  | **Transformer Architecture** | Complete Implementation           | Complete attention project |
+| 11-12 | Advanced Transformers        | Multi-head, positional encoding   | Research assignment        |
+| 13-14 | Applications                 | BERT, GPT, real-world use cases   | Final project proposal     |
+| 15    | Final Projects               | Student presentations             | Final project submission   |
 
 ### Short Course/Workshop Format
 
 **Intensive 2-Day Workshop:**
 
 **Day 1: Attention Foundations**
-- Morning (3 hours): Sections 1-2 (Linear Projections, Attention Scores)
-- Afternoon (3 hours): Sections 3-4 (Softmax Weights, Value Aggregation)
+- Morning (3 hours): Functions 1-2 (Linear Projections Q/K/V, Attention Scores)
+- Afternoon (3 hours): Functions 3-4 (Softmax Weights, Value Aggregation)
 
 **Day 2: Real-World Application**
-- Morning (2 hours): Section 5 (Transformer Integration)
+- Morning (2 hours): Complete Attention Mechanism Implementation
 - Afternoon (4 hours): Guided project work and presentations
 
 ### Module Integration
@@ -136,15 +136,15 @@ The project follows a carefully designed **"Intuition → Mathematics → Implem
 2. Project README.md for system overview
 3. Basic transformer tutorial or blog post for context
 
-**Environment Setup:**
-- Ensure all students complete installation before class
-- Test LLM integration (Ollama or OpenAI) functionality
-- Verify Jupyter notebook accessibility
+**Technical Setup:**
+- See [INSTALL.md](../INSTALL.md) for installation instructions
+- See [CONFIGURATION.md](CONFIGURATION.md) for LLM setup
+- See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for common issues
 - Provide backup plan for technical difficulties
 
 ### In-Class Facilitation
 
-**Section 1: Linear Projections (Q, K, V)**
+**Function 1: Linear Projections (Q, K, V)**
 
 *Learning Goal:* Understand how input embeddings become Query, Key, and Value matrices
 
@@ -177,7 +177,7 @@ The project follows a carefully designed **"Intuition → Mathematics → Implem
 - Show "before and after" tensor visualizations
 - Emphasize that weights are learned during training
 
-**Section 2: Scaled Dot-Product Attention**
+**Function 2: Scaled Dot-Product Attention**
 
 *Learning Goal:* Understand how Query and Key interact to produce attention scores
 
@@ -202,7 +202,7 @@ The project follows a carefully designed **"Intuition → Mathematics → Implem
 - Higher scores indicate stronger connections
 - Scaling prevents extreme values that break softmax
 
-**Section 3: Softmax & Attention Weights**
+**Function 3: Softmax & Attention Weights**
 
 *Learning Goal:* Transform raw scores into normalized probability distributions
 
@@ -222,7 +222,7 @@ The project follows a carefully designed **"Intuition → Mathematics → Implem
 - Each query attends to all keys (with different weights)
 - Sharp vs. diffuse attention patterns and their implications
 
-**Section 4: Value Aggregation**
+**Function 4: Value Aggregation**
 
 *Learning Goal:* Understand how attention weights combine Value vectors
 
@@ -237,20 +237,20 @@ The project follows a carefully designed **"Intuition → Mathematics → Implem
    - Complete end-to-end attention mechanism
    - Verify output shapes and reasonableness
 
-**Section 5: Transformer Model Comparison**
+**Complete Attention Mechanism Implementation**
 
-*Learning Goal:* Bridge educational implementation to production systems
+*Learning Goal:* Combine all functions into a complete attention mechanism
 
 *Teaching Approach:*
-1. **Scale Comparison (15 min):**
-   - Educational: 64D, 1 head, 6 tokens
-   - Production: 768D, 12 heads, 2048 tokens
-   - Discuss computational complexity implications
+1. **Integration (15 min):**
+   - Combine all 4 functions into complete attention mechanism
+   - Verify output shapes and tensor flow
+   - Test with "The cat sat on the mat" example
 
-2. **Real Model Exploration (30 min):**
-   - Load DistilGPT-2 model
-   - Compare attention patterns
-   - Discuss architectural differences and their purposes
+2. **Visualization and Analysis (30 min):**
+   - Visualize attention patterns
+   - Interpret attention weights
+   - Discuss what the model has learned
 
 ### Assessment Strategies
 
@@ -260,11 +260,11 @@ The project follows a carefully designed **"Intuition → Mathematics → Implem
 1. **LLM-Powered Code Review:** Immediate feedback on implementations
 2. **Visualization Validation:** Students interpret their attention plots
 3. **Peer Code Review:** Partner debugging and explanation exercises
-4. **Checkpoint Discussions:** Brief verbal explanations at each section
+4. **Checkpoint Discussions:** Brief verbal explanations after each function implementation
 
 **Progress Tracking:**
 - Automatic evaluation system tracks implementation completeness
-- Visual dashboard shows student progress through sections
+- Progress logs show completion of each function
 - Error patterns help identify common misconceptions
 
 ### Summative Assessment Options
@@ -276,7 +276,7 @@ The project follows a carefully designed **"Intuition → Mathematics → Implem
 - Comparison essay: educational vs. production implementations
 
 **Option 2: Teaching Exercise**
-- Students create 10-minute explanation of one attention section
+- Students create 10-minute explanation of one attention function
 - Must include both intuitive and mathematical explanations
 - Prepare simple analogy and visual aids
 - Peer evaluation component
@@ -458,20 +458,9 @@ The system provides automated code evaluation with educational feedback:
 - Immediate feedback on implementation correctness
 - Personalized suggestions for improvement
 - Understanding verification through generated questions
-- Progress tracking across all sections
+- Progress tracking across all function implementations
 
-**Using the Evaluation System:**
-```python
-# Instructor can run comprehensive evaluation
-from src.evaluation import grade_notebook
-results = grade_notebook('student_notebook.ipynb', attempt_number=1)
-
-# Results include:
-# - Section-by-section scores
-# - Educational feedback
-# - Improvement suggestions
-# - Understanding check questions
-```
+For technical details on using the evaluation system, see [TECHNICAL_SPECS.md](TECHNICAL_SPECS.md#evaluation-system).
 
 ### Manual Assessment Tools
 

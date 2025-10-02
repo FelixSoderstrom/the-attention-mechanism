@@ -16,52 +16,16 @@ Error: Python 3.7 is not supported. Please use Python 3.8 or higher.
 **Solution:**
 1. Check current version: `python --version`
 2. Install Python 3.8+ from [python.org](https://python.org)
-3. Create new virtual environment with correct Python:
-   ```bash
-   python3.13 -m venv venv  # Use specific version
-   source venv/Scripts/activate  # Windows Git Bash
-   # or source venv/bin/activate  # Linux/macOS
-   ```
+3. See [INSTALL.md](INSTALL.md#python-version-compatibility) for supported versions
 
 **Problem: Multiple Python versions detection issues**
 
-The setup script may detect wrong Python versions or fail with multiple Python installations.
-
 **Solution:**
-1. Use the new command-line argument feature to specify Python version:
-   ```bash
-   # Specify exact Python path
-   ./setup_venv.sh /usr/bin/python3.10          # Linux/macOS
-   ./setup_venv.sh C:/Python310/python.exe      # Windows
-   ./setup_venv.sh python3.10                   # From PATH
-   ```
-
-2. Get help on available options:
-   ```bash
-   ./setup_venv.sh --help
-   ```
-
-3. The setup script now accepts Python 3.8+ including Python 3.13:
-   ```bash
-   # Any of these will work
-   ./setup_venv.sh python3.8
-   ./setup_venv.sh python3.9
-   ./setup_venv.sh python3.10
-   ./setup_venv.sh python3.11
-   ./setup_venv.sh python3.12
-   ./setup_venv.sh python3.13
-   ```
-
-4. Manual verification if auto-detection fails:
-   ```bash
-   # Check which Python versions are available
-   python3.10 --version
-   python3.11 --version
-   python3.12 --version
-   
-   # Use specific version
-   python3.10 -m venv venv
-   ```
+- The setup script accepts Python 3.8-3.12 in auto-detection mode
+- Python 3.13+ requires custom path: `./setup_venv.sh /usr/bin/python3.13`
+- The script expects full paths to Python executables, not command names from PATH
+- Use `./setup_venv.sh --help` for available options
+- See [INSTALL.md](INSTALL.md#using-the-setup-script) for detailed usage
 
 ### Virtual Environment Issues
 
@@ -71,24 +35,14 @@ Error: The virtual environment was not created successfully
 ```
 
 **Solution:**
-1. Install venv module:
-   ```bash
-   # Ubuntu/Debian
-   sudo apt install python3-venv
-   
-   # macOS
-   # Usually included with Python
-   
-   # Windows
-   # Reinstall Python with "Add to PATH" checked
-   ```
+1. Ensure venv module is installed:
+   - Ubuntu/Debian: `sudo apt install python3-venv`
+   - Windows: Reinstall Python with "Add to PATH" checked
+   - macOS: Usually included with Python
 
-2. Check Python installation:
-   ```bash
-   python -m venv --help
-   ```
+2. Check Python installation: `python -m venv --help`
 
-3. Use alternative virtual environment:
+3. Alternative: Use virtualenv instead of venv:
    ```bash
    pip install virtualenv
    virtualenv venv
@@ -150,26 +104,10 @@ ERROR: Could not install packages due to an EnvironmentError
 ```
 
 **Solution:**
-1. Upgrade pip first (the script now handles failures gracefully):
-   ```bash
-   python -m pip install --upgrade pip
-   ```
-
-2. Install PyTorch with specific index:
-   ```bash
-   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
-   ```
-
-3. For CUDA support (if GPU available):
-   ```bash
-   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-   ```
-
-4. For Python 3.13+ compatibility:
-   ```bash
-   # Use latest PyTorch version which supports Python 3.13
-   pip install torch>=2.5.0 torchvision>=0.20.0 torchaudio>=2.5.0
-   ```
+1. Upgrade pip first: `python -m pip install --upgrade pip`
+2. CPU-only PyTorch: `pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu`
+3. CUDA support: `pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118`
+4. Python 3.13+ requires PyTorch 2.6.0+: `pip install torch>=2.6.0`
 
 **Problem: Jupyter installation issues**
 ```
@@ -190,34 +128,11 @@ Error: jupyter command not found
 
 **Problem: Requirements.txt version conflicts**
 
-The project now uses version ranges instead of exact versions for better compatibility.
-
 **Solution:**
-1. **Version ranges are now used**: The requirements.txt file specifies minimum versions with ranges (e.g., `torch>=2.0.0`) instead of exact versions
-2. **Python 3.8-3.13 compatibility**: All packages support the full range of Python versions
-3. **Automatic version selection**: pip will automatically choose compatible versions
-
-If you encounter conflicts:
-```bash
-# Check what versions are available
-pip index versions torch
-pip index versions numpy
-
-# Install specific compatible versions
-pip install torch==2.4.0  # Example for older Python
-pip install numpy==1.24.0  # If NumPy 2.0 causes issues
-```
-
-4. **Compatibility matrix**:
-   - Python 3.8-3.10: All package versions work
-   - Python 3.11-3.12: Modern package versions (torch>=2.0.0)
-   - Python 3.13+: Latest package versions (torch>=2.5.0)
-
-5. Clear pip cache if conflicts persist:
-   ```bash
-   pip cache purge
-   pip install -r requirements.txt
-   ```
+- The requirements.txt uses version ranges for automatic compatibility
+- If conflicts occur, check available versions: `pip index versions torch`
+- Clear pip cache if needed: `pip cache purge`
+- See [INSTALL.md](INSTALL.md#python-version-compatibility) for version matrix
 
 ### Permission and Access Issues
 
@@ -361,8 +276,9 @@ NameError: name 'attention_weights' is not defined
 from src.evaluation import validate_tensor_output
 
 # Manually validate your implementation
+# Note: The function takes 3 parameters: output tensor, function name, and input tensors dict
 try:
-    validate_tensor_output(Q, K, V, attention_weights, output)
+    validate_tensor_output(output, "attention", {"Q": Q, "K": K, "V": V, "attention_weights": attention_weights})
     print("✓ Implementation validates successfully")
 except Exception as e:
     print(f"Validation failed: {e}")
@@ -418,105 +334,24 @@ The system now automatically:
 
 ## LLM Integration Issues
 
-### Ollama Connection Problems
+For comprehensive LLM configuration and troubleshooting, see [CONFIGURATION.md](CONFIGURATION.md).
 
-**Problem: "Connection refused to localhost:11434"**
+### Quick Troubleshooting
 
-**Solution:**
-1. Check if Ollama is running:
-   ```bash
-   curl http://localhost:11434/api/tags
-   ```
-2. Start Ollama service:
-   ```bash
-   # Manual start
-   ollama serve
-   
-   # Windows - Check Windows Services for "Ollama"
-   # macOS - Check Activity Monitor
-   # Linux - Check systemctl status ollama
-   ```
-3. Verify firewall isn't blocking port 11434
+**Ollama Connection Issues:**
+- Check if running: `curl http://localhost:11434/api/tags`
+- Start service: `ollama serve`
+- Download models: `ollama pull llama3.1:8b`
 
-**Problem: "Model not found: llama3.1:8b"**
+**OpenAI API Issues:**
+- Verify API key: `echo $OPENAI_API_KEY`
+- Check rate limits in `.llm_config.json`
 
-**Solution:**
-1. List available models:
-   ```bash
-   ollama list
-   ```
-2. Download required model:
-   ```bash
-   ollama pull llama3.1:8b
-   ```
-3. Check disk space (models are 4-5GB each)
+**General LLM Issues:**
+- Test integration: `from src.llm_integration import LLMEvaluator`
+- Check logs: `tail -n 50 progress/llm_interactions.log`
 
-**Problem: Ollama installation issues**
-
-**Solution:**
-1. **Windows**: Download installer from ollama.ai
-2. **macOS**: 
-   ```bash
-   brew install ollama
-   # or download from ollama.ai
-   ```
-3. **Linux**:
-   ```bash
-   curl -fsSL https://ollama.ai/install.sh | sh
-   ```
-
-### OpenAI API Issues
-
-**Problem: "Invalid API key"**
-
-**Solution:**
-1. Verify API key format (starts with `sk-`):
-   ```bash
-   echo $OPENAI_API_KEY
-   ```
-2. Test API key:
-   ```bash
-   curl https://api.openai.com/v1/models \
-     -H "Authorization: Bearer $OPENAI_API_KEY"
-   ```
-3. Regenerate API key on OpenAI platform if needed
-
-**Problem: "Rate limit exceeded"**
-
-**Solution:**
-1. Check usage limits on OpenAI dashboard
-2. Reduce rate limiting in `.llm_config.json`:
-   ```json
-   "rate_limiting": {
-     "requests_per_minute": 10,
-     "burst_limit": 2
-   }
-   ```
-3. Enable caching to reduce API calls:
-   ```json
-   "cache": {
-     "enabled": true,
-     "ttl_seconds": 3600
-   }
-   ```
-
-**Problem: LLM integration not working**
-
-**Solution:**
-1. Test LLM integration directly:
-   ```python
-   from src.llm_integration import LLMEvaluator
-   evaluator = LLMEvaluator()
-   print("LLM evaluator created successfully")
-   ```
-2. Check configuration file:
-   ```bash
-   cat .llm_config.json | head -20
-   ```
-3. Review logs:
-   ```bash
-   tail -n 50 progress/llm_interactions.log
-   ```
+For detailed LLM setup and configuration, see [CONFIGURATION.md](CONFIGURATION.md#troubleshooting-configuration).
 
 ## Visualization and Display Issues
 
@@ -776,7 +611,7 @@ When reporting issues, collect this information:
 ### Log Files
 
 Check these log files for detailed error information:
-- `progress/llm_interactions.log` - LLM integration logs
+- `progress/llm_interactions.log` - LLM integration logs (created on first LLM use, not pre-existing)
 - Jupyter terminal output - Notebook server logs
 - Virtual environment activation logs
 
@@ -803,9 +638,9 @@ Many issues can be resolved by:
 ### Recent Improvements Summary
 
 **Setup Script Enhancements:**
-- Command-line Python version specification: `./setup_venv.sh /path/to/python`
+- Command-line Python version specification: `./setup_venv.sh /path/to/python` (requires full path to executable)
 - Help flag support: `./setup_venv.sh --help`
-- Python 3.8-3.13 compatibility with custom paths
+- Python 3.8-3.12 auto-detection, 3.13+ supported with custom paths
 - Graceful handling of pip upgrade failures
 - Removed strict error handling that caused early exits
 
@@ -818,6 +653,7 @@ Many issues can be resolved by:
 - Proper inclusion of notebook context in evaluations
 - Better error handling for missing variables
 - Fallback mechanisms for evaluation failures
+- Note: validate_tensor_output function signature: (output, function_name, input_tensors_dict)
 
 **Terminal Compatibility:**
 - Automatic detection of terminal emoji capabilities

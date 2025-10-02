@@ -15,7 +15,6 @@ The system uses `.llm_config.json` for all LLM settings:
     "fallback": { /* OpenAI configuration */ }
   },
   "educational_settings": { /* Learning preferences */ },
-  "logging": { /* Interaction logging */ },
   "rate_limiting": { /* Usage controls */ },
   "cache": { /* Response caching */ },
   "prompts": { /* Educational prompts */ }
@@ -129,7 +128,6 @@ OpenAI provides high-quality responses but requires an API key and usage costs.
 
 ### 2. Configure API Key
 
-**Method 1: Environment Variable (Recommended)**
 ```bash
 # Windows (Command Prompt)
 set OPENAI_API_KEY=sk-your-api-key-here
@@ -139,24 +137,6 @@ $env:OPENAI_API_KEY="sk-your-api-key-here"
 
 # Linux/macOS
 export OPENAI_API_KEY="sk-your-api-key-here"
-```
-
-**Method 2: .env File**
-Create `.env` file in project root:
-```
-OPENAI_API_KEY=sk-your-api-key-here
-```
-
-**Method 3: Direct Configuration**
-Add to `.llm_config.json` (less secure):
-```json
-{
-  "llm_providers": {
-    "fallback": {
-      "api_key": "sk-your-api-key-here"
-    }
-  }
-}
 ```
 
 ### 3. OpenAI Configuration in .llm_config.json
@@ -185,70 +165,24 @@ Add to `.llm_config.json` (less secure):
 }
 ```
 
-### 4. Cost Management
-
-**Recommended Settings for Educational Use:**
-- **Model**: `gpt-3.5-turbo` (most cost-effective)
-- **Max Tokens**: 2048 (balance quality vs cost)
-- **Temperature**: 0.7 (educational explanations)
-
-**Usage Estimates:**
-- Typical evaluation: ~1000 tokens ($0.002)
-- Full notebook evaluation: ~5000 tokens ($0.010)
-- Educational session: ~10000 tokens ($0.020)
 
 ## Educational Settings
 
-Configure learning preferences in `.llm_config.json`:
+Configure the explanation style in `.llm_config.json`:
 
 ```json
 {
   "educational_settings": {
-    "explanation_style": "beginner_friendly",
-    "include_code_comments": true,
-    "step_by_step_breakdown": true,
-    "provide_examples": true,
-    "difficulty_level": "intermediate"
+    "explanation_style": "beginner_friendly"
   }
 }
 ```
 
-**Available Options:**
+**Available Options for `explanation_style`:**
+- `beginner_friendly`: Clear, simple explanations for learners
+- `detailed`: Comprehensive technical explanations
+- `concise`: Brief, focused explanations
 
-| Setting | Options | Description |
-|---------|---------|-------------|
-| `explanation_style` | `beginner_friendly`, `detailed`, `concise` | Explanation verbosity |
-| `include_code_comments` | `true`, `false` | Add inline code comments |
-| `step_by_step_breakdown` | `true`, `false` | Break complex concepts |
-| `provide_examples` | `true`, `false` | Include concrete examples |
-| `difficulty_level` | `beginner`, `intermediate`, `advanced` | Target learning level |
-
-## Logging Configuration
-
-Control LLM interaction logging:
-
-```json
-{
-  "logging": {
-    "enabled": true,
-    "log_level": "INFO",
-    "log_file": "progress/llm_interactions.log",
-    "include_prompts": false,
-    "include_responses": true
-  }
-}
-```
-
-**Log Levels:**
-- `DEBUG`: All interactions and debug info
-- `INFO`: Standard operations and responses
-- `WARNING`: Issues and fallback usage
-- `ERROR`: Errors and failures only
-
-**Privacy Settings:**
-- `include_prompts`: Log prompts sent to LLM
-- `include_responses`: Log LLM responses
-- Set both to `false` for maximum privacy
 
 ## Rate Limiting and Caching
 
@@ -280,41 +214,11 @@ Control usage to prevent API overuse:
 
 ## Testing LLM Configuration
 
-### 1. Test Ollama Connection
+**Quick Test:**
 ```python
-# In Python environment
 from src.llm_integration import LLMEvaluator
-
 evaluator = LLMEvaluator()
-response = evaluator.evaluate_code(
-    student_code="def attention(): pass",
-    function_name="test",
-    context="Testing connection"
-)
-print(response)
-```
-
-### 2. Test OpenAI Fallback
-```bash
-# Temporarily stop Ollama
-# Windows: Stop "Ollama" service in Services
-# Linux/macOS: pkill ollama
-
-# Run test again - should use OpenAI
-python test_llm_comprehensive.py
-```
-
-### 3. Comprehensive Test
-```bash
-# Run all LLM integration tests
-python test_epic4_integration.py
-
-# Check specific LLM functionality
-python -c "
-from src.evaluation import grade_notebook
-results = grade_notebook('lesson.ipynb', attempt_number=1)
-print('LLM evaluation working:', results['sections_evaluated'] > 0)
-"
+print("LLM evaluator created successfully")
 ```
 
 ## Provider Switching and Failover
@@ -324,14 +228,6 @@ The system automatically handles provider switching:
 1. **Primary (Ollama)**: Always tried first
 2. **Fallback (OpenAI)**: Used if Ollama unavailable
 3. **Error Handling**: Graceful degradation with informative messages
-
-**Manual Provider Selection:**
-```python
-from src.llm_integration import LLMEvaluator
-
-# Force specific provider
-evaluator = LLMEvaluator(preferred_provider='openai')
-```
 
 ## Advanced Configuration
 
@@ -374,12 +270,7 @@ For development and testing:
 ```json
 {
   "educational_settings": {
-    "explanation_style": "detailed",
-    "difficulty_level": "advanced"
-  },
-  "logging": {
-    "log_level": "DEBUG",
-    "include_prompts": true
+    "explanation_style": "detailed"
   },
   "cache": {
     "ttl_seconds": 60
@@ -396,27 +287,42 @@ For development and testing:
 # Check service status
 curl http://localhost:11434/api/tags
 
-# Restart service (Windows)
-# Stop and start "Ollama" service in Services
-
-# Restart service (Linux/macOS)
+# Start Ollama service
 ollama serve
+
+# Windows: Check Windows Services for "Ollama"
+# macOS: Check Activity Monitor
+# Linux: Check systemctl status ollama
 ```
 
 **Model not found:**
 ```bash
-# Check available models
+# List available models
 ollama list
 
-# Pull missing model
+# Download required model (4-5GB)
 ollama pull llama3.1:8b
+
+# Alternative models
+ollama pull codellama:7b
+ollama pull mistral:7b
 ```
+
+**Installation issues:**
+- **Windows**: Download installer from [ollama.ai](https://ollama.ai/download/windows)
+- **macOS**: `brew install ollama` or download from ollama.ai
+- **Linux**: `curl -fsSL https://ollama.ai/install.sh | sh`
+
+**Connection refused:**
+- Verify firewall isn't blocking port 11434
+- Check if another process is using the port
+- Try restarting the Ollama service
 
 ### OpenAI Issues
 
-**API key errors:**
+**Invalid API key:**
 ```bash
-# Verify API key is set
+# Verify API key format (should start with 'sk-')
 echo $OPENAI_API_KEY
 
 # Test API key
@@ -424,10 +330,43 @@ curl https://api.openai.com/v1/models \
   -H "Authorization: Bearer $OPENAI_API_KEY"
 ```
 
-**Rate limit errors:**
-- Reduce `requests_per_minute` in config
-- Enable caching to reduce API calls
-- Use `gpt-3.5-turbo` instead of `gpt-4`
+**Rate limit exceeded:**
+1. Check usage on OpenAI dashboard
+2. Reduce rate limiting in `.llm_config.json`:
+   ```json
+   "rate_limiting": {
+     "requests_per_minute": 10,
+     "burst_limit": 2
+   }
+   ```
+3. Enable caching to reduce API calls:
+   ```json
+   "cache": {
+     "enabled": true,
+     "ttl_seconds": 3600
+   }
+   ```
+4. Use `gpt-3.5-turbo` instead of `gpt-4` for cost efficiency
+
+### General LLM Integration Issues
+
+**LLM not working:**
+```python
+# Test LLM integration directly
+from src.llm_integration import LLMEvaluator
+evaluator = LLMEvaluator()
+print("LLM evaluator created successfully")
+```
+
+**Check configuration:**
+```bash
+# View configuration
+cat .llm_config.json | head -20
+
+# Validate JSON format
+python -c "import json; json.load(open('.llm_config.json'))"
+```
+
 
 ### Configuration Validation
 
