@@ -1,229 +1,383 @@
-# WARNING
+# Attention Mechanism Educational Project
 
-Some of the custom commands found in this directory could potentially be **VERY DANGEROUS**.
-If you are running Claude Code I **HIGHLY RECOMMEND** you read through the setup I have going on.
-It includes running background sessions of Claude Code with flag `--dangerously-skip-permissions`.
-The background task is completely headless and you have **NO** control over what Claude Code does.
-Do **NOT** run any custom commands in this repository unless you have read and understood the configured Claude Code settings.
+## Overview
 
-This repo serves as a way to demonstrate how I did it. Not for anyone to copy/paste.
+The **Attention Mechanism Educational Project** is a comprehensive, interactive learning environment designed to teach transformer attention mechanisms from first principles to real-world applications. This project provides educators and students with a complete toolkit for understanding one of the most important concepts in modern artificial intelligence.
 
-# Project overview
+## Educational Value
 
-This is my assignment for an interactive lesson in the AI/ML engineering course.
-We got to pick our own subject of interactive lessons and I picked 'Transformers: The Attention Mechanism' where my plan was to let students of this lesson implement their own attention head that we later use to replace a layer in distilgpt2.
+### What Students Learn
 
-When asking about the difficulty of this assignment I got the reply:
-"If it's one-shottable, it's definitely too easy and needs adjusting"
+**Core Concepts:**
+- **Intuitive Understanding**: How attention mechanisms solve sequence processing challenges
+- **Mathematical Foundation**: The attention formula: `Attention(Q,K,V) = softmax(QK^T/√d_k)V`
+- **Implementation Skills**: Hand-on coding of each attention component
+- **Real-World Connection**: How educational implementations scale to production systems
 
-I'm perfectly aware that this was not meant to be interpreted as a challenge at all.
+**Learning Progression:**
+1. **Linear Projections (Q, K, V)** - Transform input embeddings into Query, Key, and Value matrices
+2. **Scaled Dot-Product Attention** - Compute attention scores between queries and keys
+3. **Softmax & Attention Weights** - Convert scores to normalized probability distributions
+4. **Value Aggregation** - Combine values using attention weights to produce final output
+5. **Transformer Integration** - Connect educational implementation to production models
 
----
+### Pedagogical Approach
 
-# One-shotting the assignment
+- **Incremental Complexity**: Build understanding step-by-step through 5 sections
+- **Consistent Example**: Use "The cat sat on the mat" throughout for coherent learning
+- **Visual Learning**: Rich visualizations for each step of the attention process
+- **Active Learning**: Interactive Jupyter notebooks with hands-on implementation
+- **Intelligent Feedback**: LLM-powered evaluation with personalized suggestions
+- **Real-World Bridge**: Compare educational implementations with production transformers
 
-I'm sure my attempt of this didn't actually make it *all the way*..
-But I'm at the stage where I'm happy even if it didn't. Tests, validation and simulations have given me the impression I'm 99% of the way there - That's more than I thought was possible to be honest.
-Achieving this required several attempts, many hours of fine-tuning prompts, rigorous testing and a $90 Claude Code subscription.
-I have learned a tremendous amount about agentic development and realised Claude Code is my new favourite dev tool.
-Even if working like this is highly ineffective and requires a tremendous setup (with current technology), I have gained powerful insights on how to achieve more in less time, how to work smart and to understand language models better.
+## System Features
 
----
+### Interactive Learning Environment
 
-# How I did it
+**Student Notebook (`lesson.ipynb`)**:
+- Interactive learning with TODO placeholders for implementation
+- Step-by-step guided discovery of attention mechanisms
+- Immediate visual feedback through attention visualizations
+- Progressive complexity building from simple concepts to complete systems
 
-```
-This setup was heavily inspired by YouTuber [IndyDevDan](https://www.youtube.com/@indydevdan)
-A lot of credit goes to him and his course on agentic workflows.
-```
-The process was executed with Claude Code. You can possibly replicate this using Aider or Cursor CLI but that would require some adjusting for the config.
-The configuration utilizes several important components:
-- Hooks
-- Custom commands
-- Agent-logging
-- Preemtive subagent creation
-- Background sessions
+**Reference Implementation (`complete_lesson.ipynb`)**:
+- Complete working implementation for instructors
+- Educational explanations with mathematical rigor
+- All functions fully implemented and tested
+- Demonstration of integration with real transformer models
 
+**Validation Notebook (`epic3_validation.ipynb`)**:
+- Comprehensive integration testing
+- Verification of system components working together
+- Debugging and validation tools for troubleshooting
 
-## Project dictionary
+### Intelligent Evaluation System
 
-**Product-manager:** The main Claude Code session that I am talking to. This agent delegates Epics to Team-leads using background sessions of Claude Code.
-**Team-lead:** A separate session of Claude Code running in the background tasked with completing an Epic. This agent delegates work to subagents.
-**Meta-agent:** The only predetermined agent. Used preemptively to create new subagents.
-**Epic:** A distinct feature in the project. These are handed to team-leads to complete. Epic definitions refer to the instructions given to each team-lead.
-****
+**LLM-Powered Assessment**:
+- Automatic code evaluation comparing student implementations to reference
+- Educational feedback focusing on understanding rather than optimization
+- Personalized improvement suggestions based on code analysis
+- Understanding verification through generated questions
 
+**Multi-Provider Support**:
+- **Primary**: Ollama (free, local AI models)
+- **Fallback**: OpenAI API (cloud-based evaluation)
+- Automatic failover and error handling
+- Configurable for educational institution needs
 
-## Explaining the settings
+### Advanced Features
 
-Copy this JSON into `.claude/settings.local.json` to use my settings
-Make sure to replace `PATH\\TO\\THIS\\REPO\\`
+**Visualization System**:
+- Attention weight heatmaps showing token relationships
+- Step-by-step tensor transformation visualizations
+- Educational plots with clear annotations and explanations
+- Interactive visualizations for exploration
 
-```json
-{
-  "env": {
-    "BASH_DEFAULT_TIMEOUT_MS": "7200000",
-    "BASH_MAX_TIMEOUT_MS": "7200000",
-    "MCP_TIMEOUT": "60000",
-    "MCP_TOOL_TIMEOUT": "120000",
-    "ANTHROPIC_MODEL": "claude-opus-4-1-20250805",
-    "CLAUDE_CODE_SUBAGENT_MODEL": "claude-sonnet-4-20250514",
-    "CLAUDE_CODE_DISABLE_TERMINAL_TITLE": "1",
-    "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": "1",
-    "DISABLE_TELEMETRY": "1",
-    "DISABLE_ERROR_REPORTING": "1",
-    "DISABLE_COST_WARNINGS": "1"
-  },
-  "permissions": {
-    "allow": [],
-    "deny": [],
-    "ask": []
-  },
-  "model": "claude-opus-4-1-20250805",
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Read|Write|MultiEdit|Edit|NotebookEdit|NotebookRead|Task",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash 'PATH\\TO\\THIS\\REPO\\.claude\\scripts\\log_agent_activity.sh'"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash 'PATH\\TO\\THIS\\REPO\\.claude\\scripts\\security_hook.sh'"
-          }
-        ]
-      }
-    ]
-  }
-}
-```
+**Transformer Integration**:
+- Load and cache production transformer models (DistilGPT-2)
+- Compare educational vs. production attention mechanisms
+- Demonstrate scale differences (64D educational vs. 768D production)
+- Bridge theory to practice with real-world examples
 
-### env
+**Progress Tracking**:
+- Automatic progress monitoring through learning sections
+- Detailed evaluation reports with improvement recommendations
+- Grade tracking with letter grade conversion
+- Educational analytics for instructor insights
 
-- Increases bash timeout. Crucial for running long background tasks.
-- Increases MCP tool timeout. Might prove beneficial for background tasks.
-- Sets Opus as main model for Claude Code. This really only affects the product-manager since we run team-leads with `--model sonnet` to save tokens. If you can spend more tokens, set team-lead model to Opus.
-- Subagents set to Sonnet. Subagents are our main token-consumers. This saves a lot of tokens compared to Opus.
-- Disables terminal title. Unnecessary content for running headless.
-- Maintain project working directory as product-manager.
-- Disables data collection.
-- Disables error reporting.
-- Disables cost warnings
+## Quick Start
 
-Disabling these last three is equivalent of `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=true`, so that might just be the cleaner option here. Even though the only one I'm interested in is cost warnings. Unsure if cost warnings actually halt headless sessions. But I didn't want to take any risk given the difficult nature of debugging this.
+### 1. Installation
 
-
-### Permissions
-
-Didn't include this because it's highly dependent on paths for the most part.
-Obviously allow everything.
-There is currently a bug where deny-list is ignored. This was solved with a hook and script for bash tools.
-
-
-### Hooks
-
-*Read|Write|MultiEdit|Edit|NotebookEdit|NotebookRead|Task* - Tools
-All log agent activity.
-Example log:
-```
-Epic:      0_start
-Time:      2025-09-19 08:58:43
-Tool used: Edit
-File:      .claude/current_epic.txt
-```
-
-*Bash* - Tool
-Triggers security hook.
-This prevents Claude from running dangerous bash commands.
-
----
-
-## Custom commands
-
-Native support in Claude Code.
-Creating Markdown file: `.claude/commands/EXAMPLE.md` allows a user to run `/EXAMPLE` directly in the Claude Code interface. This is the same thing as referencing a file with '@' for our purpose.
-Product-manager uses these commands to hand team-leads epic specific instructions.
-Example usage:
+**Automated Setup (Recommended)**:
 ```bash
-cd PROJECT_PATH && echo "/EXAMPLE" | claude --model sonnet --output-format json --dangerously-skip-permissions
+bash setup_venv.sh
 ```
-This starts a new session of Claude Code in dangerous mode with model set to sonnet and then starts the custom command /EXAMPLE.
+
+**Manual Setup**:
+```bash
+python -m venv venv
+source venv/Scripts/activate  # Windows Git Bash
+# or source venv/bin/activate  # Linux/macOS
+pip install -r requirements.txt
+```
+
+### 2. Launch Learning Environment
+
+**Web Interface**:
+```bash
+# Open index.html in your browser for guided setup
+open index.html  # macOS
+start index.html  # Windows
+xdg-open index.html  # Linux
+```
+
+**Direct Jupyter Access**:
+```bash
+source venv/Scripts/activate
+jupyter notebook
+# Open lesson.ipynb to start learning
+```
+
+### 3. Configure LLM Integration (Optional)
+
+**For Ollama (Free, Recommended)**:
+```bash
+# Install Ollama from ollama.ai
+ollama serve
+ollama pull llama3.1:8b
+```
+
+**For OpenAI (Requires API Key)**:
+```bash
+export OPENAI_API_KEY="your-api-key-here"
+```
+
+See `CONFIGURATION.md` for detailed LLM setup instructions.
+
+## Project Structure
+
+```
+attention-mechanism/
+├── 📚 Learning Materials
+│   ├── lesson.ipynb              # Interactive student notebook
+│   ├── complete_lesson.ipynb     # Complete reference implementation
+│   └── epic3_validation.ipynb    # Integration testing notebook
+├── 🛠️ System Components
+│   ├── src/
+│   │   ├── reference_attention.py    # Core attention implementations
+│   │   ├── visualizations.py        # Educational visualization functions
+│   │   ├── evaluation.py            # LLM-powered evaluation system
+│   │   ├── llm_integration.py       # Multi-provider LLM interface
+│   │   └── model_utils.py           # Transformer integration utilities
+├── ⚙️ Configuration
+│   ├── .llm_config.json         # LLM provider configuration
+│   ├── requirements.txt         # Python dependencies
+│   └── setup_venv.sh            # Automated setup script
+├── 📊 Data & Progress
+│   ├── progress/                # Progress tracking and logs
+│   ├── grade/                   # Evaluation outputs
+│   └── cache/                   # Model and response caching
+├── 🌐 Web Interface
+│   ├── index.html              # Main entry point
+│   └── learn.html              # Learning preparation guide
+├── 📖 Documentation
+│   ├── README.md               # This file
+│   ├── INSTALL.md              # Installation and setup guide
+│   ├── CONFIGURATION.md        # LLM configuration guide
+│   ├── TROUBLESHOOTING.md      # Common issues and solutions
+│   ├── TECHNICAL_SPECS.md      # System requirements and architecture
+│   └── EDUCATOR_GUIDE.md       # Complete instructor guide
+└── 🧪 Testing
+    ├── test_epic3_integration.py   # Visualization integration tests
+    ├── test_epic4_integration.py   # Evaluation system tests
+    └── test_epic5_integration.py   # Transformer integration tests
+```
+
+## Learning Objectives
+
+### Primary Learning Goals
+
+**Conceptual Understanding**:
+- Understand the intuition behind attention mechanisms and their purpose
+- Recognize how attention solves limitations of previous sequence processing approaches
+- Connect attention concepts to human cognitive attention processes
+- Appreciate the role of attention in modern AI systems (GPT, BERT, etc.)
+
+**Mathematical Competency**:
+- Derive and explain the complete attention formula step-by-step
+- Understand tensor operations involved in attention computation
+- Explain the role and importance of the scaling factor (√d_k)
+- Analyze attention weight distributions and interpret their meaning
+
+**Implementation Skills**:
+- Implement linear projections for Query, Key, and Value matrices
+- Compute scaled dot-product attention scores correctly
+- Apply softmax normalization to obtain attention weights
+- Aggregate values using attention weights to produce final outputs
+- Debug and validate attention mechanism implementations
+
+**Systems Perspective**:
+- Connect educational implementations to production transformer models
+- Understand scaling differences between learning and production environments
+- Appreciate computational complexity and optimization challenges
+- Recognize attention patterns in different types of content and applications
+
+### Assessment and Validation
+
+**Automated Evaluation**:
+- LLM-powered code comparison against reference implementations
+- Tensor shape and mathematical correctness validation
+- Implementation completeness checking across all sections
+- Educational feedback generation with improvement suggestions
+
+**Learning Verification**:
+- Understanding check questions generated by AI evaluation
+- Visual interpretation of attention weight patterns
+- Explanation exercises connecting theory to implementation
+- Real-world application discussions and examples
+
+## Educational Applications
+
+### Course Integration
+
+**University Courses**:
+- **Machine Learning**: 2-3 week attention mechanism module
+- **Deep Learning**: Core component in sequence modeling curriculum
+- **Natural Language Processing**: Foundation for transformer-based models
+- **Artificial Intelligence**: Advanced topic in modern AI systems
+
+**Professional Development**:
+- **Industry Workshops**: 1-2 day intensive attention mechanism training
+- **Research Onboarding**: Introduction to transformer research for new team members
+- **Technical Bootcamps**: Hands-on transformer implementation workshops
+
+### Flexible Learning Formats
+
+**Self-Paced Learning**:
+- Individual students working through materials independently
+- Automatic progress tracking and intelligent feedback
+- Available 24/7 with offline capabilities after initial setup
+
+**Classroom Integration**:
+- Guided instructor-led sessions with live coding
+- Group activities and peer programming exercises
+- Discussion sessions connecting concepts to research and applications
+
+**Hybrid Delivery**:
+- Flipped classroom with pre-class preparation materials
+- In-class implementation workshops and problem-solving
+- Online follow-up with advanced extension activities
+
+## Technical Requirements
+
+### Minimum System Requirements
+
+- **Operating System**: Windows 10+, macOS 10.14+, or Linux (Ubuntu 18.04+)
+- **Python**: Version 3.8+ (Python 3.13.1 tested and recommended)
+- **Memory**: 4 GB RAM minimum, 8 GB recommended
+- **Storage**: 2 GB free space, 5 GB recommended
+- **Network**: Broadband connection for initial setup
+
+### Dependencies
+
+**Core Libraries**:
+- **PyTorch**: Tensor operations and neural network components
+- **NumPy**: Numerical computations and array operations
+- **Matplotlib/Seaborn**: Visualization and plotting
+- **Jupyter**: Interactive notebook environment
+- **Transformers**: HuggingFace library for production model integration
+
+**Educational Features**:
+- **Ollama/OpenAI**: LLM integration for intelligent evaluation
+- **Rich/Colorama**: Enhanced terminal output and progress display
+- **Plotly**: Interactive visualizations for advanced exploration
+
+See `TECHNICAL_SPECS.md` for complete hardware and software specifications.
+
+## Support and Documentation
+
+### Comprehensive Documentation
+
+- **`INSTALL.md`**: Complete installation and setup instructions
+- **`CONFIGURATION.md`**: LLM configuration and provider setup
+- **`TROUBLESHOOTING.md`**: Solutions for common issues and problems
+- **`TECHNICAL_SPECS.md`**: System requirements and architecture details
+- **`EDUCATOR_GUIDE.md`**: Complete instructor guide with teaching strategies
+
+### Getting Help
+
+**Technical Issues**:
+1. Check `TROUBLESHOOTING.md` for common solutions
+2. Verify installation following `INSTALL.md`
+3. Validate configuration using `CONFIGURATION.md`
+
+**Educational Support**:
+1. Review `EDUCATOR_GUIDE.md` for teaching strategies
+2. Explore example lesson plans and assessment rubrics
+3. Join educational technology communities for best practices
+
+**System Status**:
+- Use built-in diagnostic tools in the web interface
+- Run integration tests to verify system functionality
+- Check log files for detailed error information
+
+## Contributing and Customization
+
+### Extending the System
+
+**Custom Attention Variants**:
+- Implement additional attention mechanisms (additive, multiplicative)
+- Add multi-head attention extensions
+- Explore positional encoding integration
+
+**Additional Visualizations**:
+- Create new visualization types for attention patterns
+- Develop interactive exploration tools
+- Add support for different data modalities
+
+**Enhanced Evaluation**:
+- Implement additional assessment strategies
+- Add support for different LLM providers
+- Create custom evaluation rubrics for specific learning objectives
+
+### Educational Customization
+
+**Content Adaptation**:
+- Modify examples for domain-specific applications
+- Adjust difficulty levels for different student populations
+- Create specialized notebooks for research or industry contexts
+
+**Assessment Customization**:
+- Design custom evaluation criteria
+- Implement institution-specific grading systems
+- Add integration with learning management systems
+
+## Research and Educational Impact
+
+### Pedagogical Innovation
+
+**Evidence-Based Design**:
+- Built on cognitive science principles for effective learning
+- Incorporates active learning and immediate feedback mechanisms
+- Designed for scalable delivery across different educational contexts
+
+**AI-Enhanced Education**:
+- Demonstrates integration of AI tools in educational technology
+- Provides model for LLM-powered assessment and feedback
+- Explores automated evaluation in technical education
+
+### Research Applications
+
+**Educational Research**:
+- Platform for studying transformer attention learning patterns
+- Data collection on common student misconceptions
+- Analysis of effective teaching strategies for complex AI concepts
+
+**Technical Research**:
+- Baseline implementation for attention mechanism research
+- Educational bridge between theory and practice in transformer research
+- Foundation for exploring attention interpretability and analysis
+
+## License and Usage
+
+This project is designed for educational use and is available under appropriate educational licensing. The system is intended to support learning and teaching of attention mechanisms in academic and professional development contexts.
+
+**Educational Use**: Freely available for classroom instruction, student learning, and educational research.
+
+**Commercial Training**: Contact maintainers for licensing information for commercial training programs.
+
+**Contributions**: Welcome from educators, researchers, and developers interested in improving AI education.
+
+## Acknowledgments
+
+This project builds on fundamental research in transformer attention mechanisms and educational technology. Special recognition goes to:
+
+- The attention mechanism research community for foundational work
+- Educational technology researchers for pedagogical insights
+- Open source contributors to PyTorch, Jupyter, and related tools
+- Educators and students who provide feedback for continuous improvement
 
 ---
 
-## Agent logging
-
-Logs agent activity when tools *Read|Write|MultiEdit|Edit|NotebookEdit|NotebookRead|Task* are used.
-These tool calls run `.claude/scripts/log-agent-activity.sh`.
-Currently set up to use filename defined in `.claude/current-epic.txt`.
-Changing `epic-name.txt` was done by the product manager in between epics. This ensured separate logfiles for each epic.
-The script also outputs verbose logs shared for all epics (not included in push because of size)
-
----
-
-## Preemptive subagent creation
-
-I actually tried leaving subagents created in attempt 1 for attempt 2 but the team-leads seemed to ignore these agents and created their own instead. Perhaps because of my suggestive instructions on how to use the meta-agent.
-The use of meta-agent was crucial for this process to succeed. Without it we would not have had a centralized agent format. A crucial component for any agentic development, especially when each subagent's prompt is predetermined by a prompt itself.
-Meta-agent, probably the biggest contributor to this entire workflow.
-Thanks again to IndyDevDan!
-
----
-
-## Background sessions
-
-Done by having the product-manager run a new Claude Code session with `--dangerously-skip-permissions` to create a team-lead.
-These sessions are as you might have already figured, completely headless. Which makes them **VERY** hard to debug.
-Check the logs often to see if a background task hangs.
-Run `tasklist | findstr node` to find node processes running.
-These are not guaranteed to be Claude Code, but if Claude Code is running it's here.
-Use `taskkill //f //pidw [ID]` to kill the processes.
-This might mess up the current epic you were in, so be warned when you try to resume a team-lead mid-epic.
-
----
-
-# During the Epics
-
-**Agent hand-off**
-Each epic created `.epic[n]_complete.json` for agent hand-off.
-This both made the team-leads and subagents go through the extra step of actually checking a box for completing a task and also served as a hand-off point between different epics.
-
-**Suggesting subagents**
-To prevent the use of the built in general-purpose agent I hinted at what good agents could be to the team-lead in each epic definition.
-I also stated that the meta-agent needed to be used preemptively after thinking about what tasks needs to be done.
-
-**Documentation policy**
-To prevent cluttered codebase I advised against creating documentation.
-This was handled by the last epic. This also ensured that one state of the code got documented and prevented confusion between deprecated documentation or code.
-
-**Technical details**
-Consistent prompt example, tensor shape used throughout all epic definitions.
-Color scheme preference to prevent Toys R Us frontend alá Sonnet (still pretty bad).
-
----
-
-# Post development
-
-## Epic content validation
-
-Subagent deployed to manually read parts of the codebase and logs to compare with epic definition.
-Multiple versions of this agent deployed. Responded with 100% of epic definitions were implemented.
-
-
-## Student simulation
-
-Subagent simulating a student was deployed and tasked to:
-1. Read documentation
-2. Set up the virtual environment
-3. Complete the lesson
-4. Run evaluation
-Student simulation subagent then reported back to product manager with assessment.
-This caught some bugs and formatting errors that were immediately resolved by product-manager.
-Second pass of student simulation revealed everything went well and critical bugs were fixed.
+**Get Started**: Open `index.html` in your browser or jump directly to `lesson.ipynb` for hands-on learning about transformer attention mechanisms!
