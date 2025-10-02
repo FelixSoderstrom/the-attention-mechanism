@@ -373,11 +373,14 @@ def save_visualization(fig, filename: str, dpi: int = 300) -> None:
 # Module initialization
 setup_visualization_style()
 
-print("Visualization module loaded successfully!")
-print("Available functions:")
-print("- visualize_qkv_projections()")
-print("- visualize_attention_scores()")
-print("- visualize_attention_weights()")
-print("- visualize_attended_values()")
-print("- visualize_attention_flow()")
-print("\nNote: Epic 3 implementations now complete.")
+# Suppress module initialization prints unless in debug mode
+import os
+if __name__ == "__main__" or os.environ.get('VISUALIZATION_DEBUG', '').lower() == 'true':
+    print("Visualization module loaded successfully!")
+    print("Available functions:")
+    print("- visualize_qkv_projections()")
+    print("- visualize_attention_scores()")
+    print("- visualize_attention_weights()")
+    print("- visualize_attended_values()")
+    print("- visualize_attention_flow()")
+    print("\nNote: Epic 3 implementations now complete.")

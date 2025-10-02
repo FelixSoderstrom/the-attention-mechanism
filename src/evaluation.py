@@ -33,6 +33,12 @@ try:
 except ImportError:
     from src.llm_integration import LLMEvaluator
 
+# Import notebook executor for context-aware evaluation
+try:
+    from .notebook_executor import NotebookExecutor
+except ImportError:
+    from src.notebook_executor import NotebookExecutor
+
 try:
     from .reference_attention import (
         create_qkv_projections as ref_create_qkv_projections,
@@ -386,20 +392,20 @@ def grade_notebook(notebook_path: str, attempt_number: int = 1) -> Dict[str, Any
     try:
         # Create grade directory for this attempt
         grade_dir = _create_grade_directory(attempt_number)
-        
+
         # Load Epic 1 cell mapping
         cell_mapping = _load_epic1_cell_mapping()
-        
-        # Extract notebook context for variable access
-        notebook_context = _extract_notebook_context(notebook_path)
-        
+
+        # Initialize NotebookExecutor for context-aware evaluation
+        use_context_aware = True  # Feature flag for new execution model
+
         # Extract student implementations from notebook
         student_implementations = _extract_student_code(notebook_path, cell_mapping)
-        
+
         # Evaluate each section
         section_results = {}
         overall_scores = []
-        
+
         for section_name, implementation_info in student_implementations.items():
             if implementation_info['code']:
                 # Evaluate implementation
@@ -408,26 +414,38 @@ def grade_notebook(notebook_path: str, attempt_number: int = 1) -> Dict[str, Any
                     function_name=implementation_info['function_name'],
                     context=implementation_info.get('context')
                 )
-                
-                # Test implementation with notebook context
+
+                # Test implementation with appropriate context
                 tensor_result = None
                 try:
-                    tensor_result = _test_student_implementation(
-                        implementation_info['code'],
-                        implementation_info['function_name'],
-                        notebook_context=notebook_context
-                    )
+                    if use_context_aware and implementation_info.get('cell_index', -1) != -1:
+                        # Use new context-aware testing
+                        tensor_result = _test_student_implementation_with_context(
+                            notebook_path,
+                            implementation_info['function_name'],
+                            implementation_info['cell_index']
+                        )
+                    else:
+                        # Fallback to old method if context-aware is disabled or cell not found
+                        notebook_context = _extract_notebook_context(notebook_path)
+                        tensor_result = _test_student_implementation(
+                            implementation_info['code'],
+                            implementation_info['function_name'],
+                            notebook_context=notebook_context
+                        )
                 except Exception as e:
                     tensor_result = {'error': str(e), 'valid': False}
-                
+
                 section_results[section_name] = {
                     'llm_evaluation': eval_result,
                     'tensor_validation': tensor_result,
                     'function_name': implementation_info['function_name'],
+                    'cell_index': implementation_info.get('cell_index', -1),
                     'cell_range': implementation_info.get('cell_range'),
+                    'used_context_aware': use_context_aware and implementation_info.get('cell_index', -1) != -1,
                     'timestamp': datetime.now().isoformat()
                 }
-                
+
                 # Collect scores
                 if eval_result.get('score') is not None:
                     overall_scores.append(eval_result['score'])
@@ -826,43 +844,54 @@ def _create_grade_directory(attempt_number: int) -> Path:
 
 
 def _extract_student_code(notebook_path: str, cell_mapping: Dict[str, Any]) -> Dict[str, Any]:
-    """Extract student implementation code from notebook cells."""
+    """Extract student implementation code from notebook cells with cell indices."""
     try:
         import nbformat
-        
+
         if not Path(notebook_path).exists():
             logging.error(f"Notebook not found: {notebook_path}")
             return {}
-        
+
         # Load notebook
         with open(notebook_path, 'r', encoding='utf-8') as f:
             nb = nbformat.read(f, as_version=4)
-        
+
         implementations = {}
-        
+
+        # Track code cell indices
+        code_cell_index = 0
+
         for section_name, section_info in cell_mapping.items():
             function_name = section_info.get('todo_function')
             cell_range = section_info.get('cells', [])
-            
-            # Extract code from cells in the range
+
+            # Extract code from cells and track where function is defined
             code_parts = []
-            for cell in nb.cells:
+            function_cell_index = -1
+
+            # Reset code cell counter for each search
+            current_code_index = 0
+            for idx, cell in enumerate(nb.cells):
                 if cell.cell_type == 'code':
-                    # Simple heuristic: look for function definitions
+                    # Look for function definition
                     if function_name and f'def {function_name}' in cell.source:
                         code_parts.append(cell.source)
-            
+                        function_cell_index = current_code_index
+                    current_code_index += 1
+
             implementations[section_name] = {
                 'function_name': function_name,
                 'code': '\n\n'.join(code_parts) if code_parts else '',
+                'cell_index': function_cell_index,  # Track which code cell contains the function
                 'cell_range': cell_range,
                 'title': section_info.get('title', ''),
                 'context': {
                     'section_name': section_name,
-                    'expected_function': function_name
+                    'expected_function': function_name,
+                    'cell_index': function_cell_index
                 }
             }
-        
+
         return implementations
         
     except Exception as e:
@@ -1061,7 +1090,7 @@ def _validate_tensor_values(output: torch.Tensor, function_name: str, inputs: Di
 
 def _test_student_implementation(code: str, function_name: str, notebook_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """Execute student code and test it with sample inputs.
-    
+
     Args:
         code: Student's implementation code
         function_name: Name of the function to test
@@ -1070,23 +1099,181 @@ def _test_student_implementation(code: str, function_name: str, notebook_context
     try:
         # Create a test environment with notebook context
         test_globals = _build_test_context(notebook_context)
-        
+
         # Execute student code in test environment
         exec(code, test_globals)
-        
+
         # Check if function exists
         if function_name not in test_globals:
             return {'valid': False, 'error': f'Function {function_name} not defined'}
-        
+
         student_function = test_globals[function_name]
-        
+
         # Test with sample inputs
         test_results = _run_function_tests(student_function, function_name, test_globals)
-        
+
         return test_results
-        
+
     except Exception as e:
         return {'valid': False, 'error': str(e)}
+
+
+def _test_student_implementation_with_context(notebook_path: str, function_name: str, cell_index: int) -> Dict[str, Any]:
+    """Test student function with full notebook context using NotebookExecutor.
+
+    This function executes all cells up to and including the function definition,
+    providing the complete cumulative context needed for proper evaluation.
+
+    Args:
+        notebook_path: Path to the student's notebook
+        function_name: Name of the function to test
+        cell_index: Index of the cell containing the function definition
+
+    Returns:
+        Test results with context information
+    """
+    try:
+        # Initialize executor
+        executor = NotebookExecutor(notebook_path)
+
+        # If cell_index is -1, the function wasn't found
+        if cell_index == -1:
+            return {
+                'valid': False,
+                'error': f'Function {function_name} not found in notebook',
+                'context_issue': True
+            }
+
+        # Get context up to and including function definition
+        context = executor.execute_cells_until(cell_index)
+
+        # Validate context has required variables
+        is_valid, missing_vars = executor.validate_context_for_function(function_name, context)
+
+        if not is_valid:
+            return {
+                'valid': False,
+                'error': f'Missing required variables for {function_name}: {missing_vars}',
+                'context_issue': True,
+                'missing_variables': missing_vars
+            }
+
+        # Check if function exists in context
+        if function_name not in context:
+            return {
+                'valid': False,
+                'error': f'Function {function_name} not found after cell execution',
+                'context_issue': True
+            }
+
+        # Get the function from the context
+        student_function = context[function_name]
+
+        # Run tests with actual notebook context
+        test_results = _run_function_tests_with_context(student_function, function_name, context)
+        test_results['used_cumulative_context'] = True
+        test_results['cell_index'] = cell_index
+
+        return test_results
+
+    except Exception as e:
+        logging.error(f"Error testing with context: {e}")
+        return {
+            'valid': False,
+            'error': str(e),
+            'context_issue': True
+        }
+
+
+def _run_function_tests_with_context(func, function_name: str, context: Dict[str, Any]) -> Dict[str, Any]:
+    """Run specific tests for each function using actual notebook context.
+
+    This version uses the cumulative notebook context, ensuring functions
+    have access to all variables defined in previous cells.
+
+    Args:
+        func: The student function to test
+        function_name: Name of the function being tested
+        context: Complete notebook context up to function definition
+    """
+    try:
+        if function_name == 'create_qkv_projections':
+            # Use actual embeddings from notebook context
+            if 'embeddings' not in context:
+                return {'valid': False, 'error': 'embeddings not found in context'}
+
+            embeddings = context['embeddings']
+            Q, K, V = func(embeddings)
+
+            return {
+                'valid': Q.shape == K.shape == V.shape == torch.Size([1, 6, 64]),
+                'output_shapes': {'Q': list(Q.shape), 'K': list(K.shape), 'V': list(V.shape)},
+                'test_passed': True,
+                'used_notebook_context': True,
+                'actual_embeddings_shape': list(embeddings.shape)
+            }
+
+        elif function_name == 'compute_attention_scores':
+            # Use actual Q, K from notebook context
+            if 'Q' not in context or 'K' not in context:
+                return {'valid': False, 'error': 'Q or K not found in context'}
+
+            Q = context['Q']
+            K = context['K']
+            scores = func(Q, K)
+
+            return {
+                'valid': scores.shape == torch.Size([1, 6, 6]),
+                'output_shape': list(scores.shape),
+                'test_passed': True,
+                'used_notebook_context': True,
+                'input_shapes': {'Q': list(Q.shape), 'K': list(K.shape)}
+            }
+
+        elif function_name == 'compute_attention_weights':
+            # Use actual attention_scores from notebook context
+            if 'attention_scores' not in context:
+                return {'valid': False, 'error': 'attention_scores not found in context'}
+
+            scores = context['attention_scores']
+            weights = func(scores)
+
+            weights_sum = torch.sum(weights, dim=-1)
+            sum_check = torch.allclose(weights_sum, torch.ones_like(weights_sum), atol=1e-6)
+
+            return {
+                'valid': weights.shape == torch.Size([1, 6, 6]) and sum_check,
+                'output_shape': list(weights.shape),
+                'weights_sum_to_one': sum_check,
+                'test_passed': True,
+                'used_notebook_context': True,
+                'input_shape': list(scores.shape)
+            }
+
+        elif function_name == 'aggregate_values':
+            # Use actual attention_weights and V from notebook context
+            if 'attention_weights' not in context:
+                return {'valid': False, 'error': 'attention_weights not found in context'}
+            if 'V' not in context:
+                return {'valid': False, 'error': 'V not found in context'}
+
+            weights = context['attention_weights']
+            V = context['V']
+            output = func(weights, V)
+
+            return {
+                'valid': output.shape == torch.Size([1, 6, 64]),
+                'output_shape': list(output.shape),
+                'test_passed': True,
+                'used_notebook_context': True,
+                'input_shapes': {'weights': list(weights.shape), 'V': list(V.shape)}
+            }
+
+        else:
+            return {'valid': False, 'error': f'Unknown function type: {function_name}'}
+
+    except Exception as e:
+        return {'valid': False, 'error': str(e), 'context_issue': True}
 
 
 def _run_function_tests(func, function_name: str, test_context: Dict[str, Any]) -> Dict[str, Any]:
@@ -1260,17 +1447,206 @@ def _generate_implementation_recommendations(missing_functions: List[str]) -> Li
     return recommendations
 
 
-# Module initialization
-print("Epic 4 Evaluation module loaded successfully!")
-print("Available functions:")
-print("- evaluate_cell_implementation() - LLM-powered code comparison")
-print("- validate_tensor_output() - Tensor shape and value validation")
-print("- grade_notebook() - Main evaluation orchestrator")
-print("- generate_feedback() - Educational feedback generation")
-print("- check_implementation_completeness() - Implementation status check")
-print("- evaluate_attention_output() - Legacy evaluation function")
-print("- validate_qkv_projections() - Q, K, V validation")
-print("- evaluate_attention_scores() - Attention scores evaluation")
-print("- generate_progress_report() - Progress tracking")
-print("- benchmark_implementation() - Performance testing")
-print("\nEpic 4: LLM-powered evaluation system ready!")
+def run_notebook_evaluation(notebook_path: str = "lesson.ipynb", clear_cache: bool = False) -> Dict[str, Any]:
+    """
+    Run comprehensive LLM evaluation with automatic attempt numbering and pretty printing.
+
+    This is the main user-facing function for notebook evaluation. It:
+    1. Automatically determines the next attempt number
+    2. Runs the full LLM evaluation using grade_notebook()
+    3. Pretty prints the results in a user-friendly format
+    4. Returns the full evaluation results
+
+    Args:
+        notebook_path: Path to the notebook to evaluate (default: lesson.ipynb)
+        clear_cache: If True, clear the LLM cache before evaluation (default: False)
+
+    Returns:
+        Dictionary containing the full evaluation results
+    """
+    print("=" * 70)
+    print("🎯 RUNNING COMPREHENSIVE LLM EVALUATION")
+    print("=" * 70)
+
+    # Clear cache if requested
+    if clear_cache:
+        cache_dir = Path("progress/.llm_cache")
+        if cache_dir.exists():
+            import shutil
+            print("\n📗 Clearing LLM cache...")
+            shutil.rmtree(cache_dir)
+            cache_dir.mkdir(parents=True, exist_ok=True)
+            print("   ✅ Cache cleared - will make fresh LLM calls")
+
+    # Step 1: Determine the next attempt number
+    print("\n1. Checking for existing evaluation attempts...")
+    grade_dir = Path("grade")
+    grade_dir.mkdir(exist_ok=True)
+
+    # Find all existing attempt directories
+    existing_attempts = []
+    if grade_dir.exists():
+        for item in grade_dir.iterdir():
+            if item.is_dir() and item.name.startswith("attempt_"):
+                try:
+                    attempt_num = int(item.name.split("_")[1])
+                    existing_attempts.append(attempt_num)
+                except (IndexError, ValueError):
+                    continue
+
+    if existing_attempts:
+        highest_attempt = max(existing_attempts)
+        next_attempt = highest_attempt + 1
+        print(f"   Found {len(existing_attempts)} existing attempt(s)")
+        print(f"   Highest attempt number: {highest_attempt}")
+    else:
+        next_attempt = 1
+        print("   No existing attempts found")
+
+    print(f"   → Will use attempt number: {next_attempt}")
+
+    # Step 2: Run the LLM evaluation
+    print(f"\n2. Running LLM evaluation (attempt #{next_attempt})...")
+    print("   This evaluates all 4 functions using Llama 3.1")
+    print("   Please wait, this may take 20-40 seconds...")
+
+    import time
+    start_time = time.time()
+
+    try:
+        # Suppress all unwanted output during evaluation
+        import matplotlib
+        matplotlib.use('Agg')  # Use non-interactive backend to prevent plots
+        import matplotlib.pyplot as plt
+        plt.ioff()  # Turn off interactive mode
+
+        # Suppress stdout/stderr during evaluation
+        import sys
+        import io
+        from contextlib import redirect_stdout, redirect_stderr
+
+        # Capture output but don't display it
+        captured_output = io.StringIO()
+        captured_errors = io.StringIO()
+
+        with redirect_stdout(captured_output), redirect_stderr(captured_errors):
+            # Run the actual LLM evaluation (all prints/plots are captured)
+            results = grade_notebook(notebook_path, attempt_number=next_attempt)
+
+        elapsed_time = time.time() - start_time
+        print(f"   ✅ Evaluation complete in {elapsed_time:.1f} seconds")
+
+        # Step 3: Load and pretty print the results
+        report_path = Path(f"grade/attempt_{next_attempt}/grade_report_attempt_{next_attempt}.json")
+
+        if report_path.exists():
+            with open(report_path, 'r') as f:
+                report = json.load(f)
+
+            print("\n" + "=" * 70)
+            print("📊 EVALUATION REPORT")
+            print("=" * 70)
+
+            # Overall results
+            print(f"\n🎯 OVERALL RESULTS:")
+            print(f"   • Overall Score: {report['overall_score']:.1f}/100")
+            print(f"   • Letter Grade: {report['overall_grade']}")
+            print(f"   • Attempt Number: {report['attempt_number']}")
+
+            # Individual function scores
+            print(f"\n📝 INDIVIDUAL FUNCTION SCORES:")
+            for section_name, section_result in report['section_results'].items():
+                func_name = section_result['function_name']
+                llm_eval = section_result['llm_evaluation']
+                score = llm_eval.get('score', 0)
+                status = llm_eval.get('comparison_result', 'unknown')
+
+                # Emoji based on score
+                if score >= 80:
+                    emoji = "✅"
+                elif score >= 60:
+                    emoji = "⚠️"
+                else:
+                    emoji = "❌"
+
+                print(f"   {emoji} {func_name}: {score}/100 ({status})")
+
+            # Summary statistics
+            summary = report.get('summary', {})
+            print(f"\n📈 SUMMARY:")
+            print(f"   • Sections evaluated: {summary.get('sections_evaluated', 0)}")
+            print(f"   • Sections implemented: {summary.get('sections_implemented', 0)}")
+            print(f"   • Average score: {summary.get('average_score', 0):.1f}/100")
+
+            # Educational feedback for the lowest scoring function
+            print(f"\n💡 EDUCATIONAL FEEDBACK:")
+            lowest_score = 100
+            lowest_func = None
+            for section_name, section_result in report['section_results'].items():
+                score = section_result['llm_evaluation'].get('score', 0)
+                if score < lowest_score:
+                    lowest_score = score
+                    lowest_func = section_result
+
+            if lowest_func and lowest_func['llm_evaluation'].get('educational_feedback'):
+                print(f"   Feedback for {lowest_func['function_name']} (lowest score: {lowest_score}/100):")
+                feedback = lowest_func['llm_evaluation']['educational_feedback']
+                # Print first 300 chars of feedback
+                if len(feedback) > 300:
+                    print(f"   {feedback[:300]}...")
+                else:
+                    print(f"   {feedback}")
+
+                # Print suggestions if available
+                suggestions = lowest_func['llm_evaluation'].get('suggestions', [])
+                if suggestions:
+                    print(f"\n   Suggestions:")
+                    for i, suggestion in enumerate(suggestions[:3], 1):
+                        print(f"   {i}. {suggestion}")
+
+            print(f"\n📁 Full report saved to: {report_path}")
+            print(f"   View with: cat {report_path} | python -m json.tool")
+
+        else:
+            print(f"   ⚠️ Report file not found at {report_path}")
+            print(f"   Evaluation may still be processing...")
+
+        print("\n" + "=" * 70)
+        print("Evaluation complete! The LLM has assessed your implementation.")
+        print("=" * 70)
+
+        # Reset matplotlib to interactive backend for normal notebook use
+        try:
+            import matplotlib
+            import matplotlib.pyplot as plt
+            matplotlib.use('module://matplotlib_inline.backend_inline')
+            plt.ion()  # Turn interactive mode back on
+        except:
+            pass  # If inline backend not available, just continue
+
+        return results
+
+    except Exception as e:
+        logging.error(f"Evaluation failed in run_notebook_evaluation: {e}")
+        print(f"\n❌ Evaluation failed: {e}")
+        print("   Check logs directory for detailed error information")
+        print("\n" + "=" * 70)
+        raise
+
+
+# Module initialization - only print if running as main or in debug mode
+if __name__ == "__main__" or os.environ.get('EVALUATION_DEBUG', '').lower() == 'true':
+    print("Epic 4 Evaluation module loaded successfully!")
+    print("Available functions:")
+    print("- run_notebook_evaluation() - Main user-facing evaluation with pretty output")
+    print("- evaluate_cell_implementation() - LLM-powered code comparison")
+    print("- validate_tensor_output() - Tensor shape and value validation")
+    print("- grade_notebook() - Main evaluation orchestrator")
+    print("- generate_feedback() - Educational feedback generation")
+    print("- check_implementation_completeness() - Implementation status check")
+    print("- evaluate_attention_output() - Legacy evaluation function")
+    print("- validate_qkv_projections() - Q, K, V validation")
+    print("- evaluate_attention_scores() - Attention scores evaluation")
+    print("- generate_progress_report() - Progress tracking")
+    print("- benchmark_implementation() - Performance testing")
+    print("\nEpic 4: LLM-powered evaluation system ready!")

@@ -22,7 +22,6 @@ Example Usage:
 """
 
 import json
-import logging
 import os
 import time
 import hashlib
@@ -50,31 +49,30 @@ class LLMEvaluator:
     def __init__(self, config_path: str = "./.llm_config.json"):
         """
         Initialize LLM evaluator with configuration.
-        
+
         Args:
             config_path: Path to LLM configuration file
         """
         self.config_path = config_path
         self.config = self._load_config()
-        self.logger = self._setup_logging()
+
         self.cache = self._setup_cache()
+
         self.rate_limiter = RateLimiter(
             requests_per_minute=self.config["rate_limiting"]["requests_per_minute"],
             burst_limit=self.config["rate_limiting"]["burst_limit"]
         )
-        
+
         # Initialize providers
         self.primary_provider = self._init_provider("primary")
+
         try:
             self.fallback_provider = self._init_provider("fallback")
         except LLMProviderError as e:
-            self.logger.warning(f"Fallback provider initialization failed: {e}")
             self.fallback_provider = None
-        
+
         # Educational prompt templates
         self.prompt_templates = EducationalPromptTemplates(self.config)
-        
-        self.logger.info("LLM Evaluator initialized successfully")
     
     def _load_config(self) -> Dict[str, Any]:
         """Load configuration from JSON file"""
@@ -85,23 +83,6 @@ class LLMEvaluator:
             raise LLMProviderError(f"Configuration file not found: {self.config_path}")
         except json.JSONDecodeError as e:
             raise LLMProviderError(f"Invalid JSON in configuration file: {e}")
-    
-    def _setup_logging(self) -> logging.Logger:
-        """Setup logging based on configuration"""
-        logger = logging.getLogger("llm_integration")
-        logger.setLevel(getattr(logging, self.config["logging"]["log_level"]))
-        
-        # Create progress directory if it doesn't exist
-        os.makedirs("progress", exist_ok=True)
-        
-        # File handler
-        file_handler = logging.FileHandler(self.config["logging"]["log_file"])
-        file_handler.setFormatter(
-            logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        )
-        logger.addHandler(file_handler)
-        
-        return logger
     
     def _setup_cache(self) -> Optional['ResponseCache']:
         """Setup response caching if enabled"""
@@ -115,25 +96,25 @@ class LLMEvaluator:
     def _init_provider(self, provider_type: str) -> 'LLMProvider':
         """Initialize LLM provider (primary or fallback)"""
         provider_config = self.config["llm_providers"][provider_type]
-        
+
         if provider_config["provider"] == "ollama":
-            return OllamaProvider(provider_config, self.logger)
+            return OllamaProvider(provider_config)
         elif provider_config["provider"] == "openai":
-            return OpenAIProvider(provider_config, self.logger)
+            return OpenAIProvider(provider_config)
         else:
             raise LLMProviderError(f"Unknown provider: {provider_config['provider']}")
     
-    def compare_code(self, student_code: str, reference_code: str, 
+    def compare_code(self, student_code: str, reference_code: str,
                     function_name: str, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """
         Compare student code against reference implementation with educational feedback.
-        
+
         Args:
             student_code: Student's implementation code
             reference_code: Reference implementation code
             function_name: Name of the function being evaluated
             context: Additional context (e.g., test inputs, expected outputs)
-        
+
         Returns:
             Dictionary containing:
             - comparison_result: overall assessment
@@ -144,98 +125,97 @@ class LLMEvaluator:
         """
         # Check rate limiting
         self.rate_limiter.wait_if_needed()
-        
+
         # Check cache first
         cache_key = self._generate_cache_key(student_code, reference_code, function_name)
         if self.cache:
             cached_result = self.cache.get(cache_key)
             if cached_result:
-                self.logger.info(f"Returning cached result for {function_name}")
                 return cached_result
-        
+
         # Generate prompt
         prompt = self.prompt_templates.create_code_comparison_prompt(
             student_code, reference_code, function_name, context
         )
-        
+
         # Try primary provider first, then fallback
         result = None
-        for provider_name, provider in [("primary", self.primary_provider), 
+        providers_tried = []
+
+        for provider_name, provider in [("primary", self.primary_provider),
                                        ("fallback", self.fallback_provider)]:
             if provider is None:
                 continue
-                
+
+            providers_tried.append(provider_name)
+
             try:
-                self.logger.info(f"Attempting code comparison with {provider_name} provider")
                 response = provider.generate_response(prompt, "educational")
                 result = self._parse_comparison_response(response, function_name)
-                self.logger.info(f"Successfully generated comparison with {provider_name} provider")
                 break
+
             except Exception as e:
-                self.logger.warning(f"{provider_name} provider failed: {e}")
                 continue
-        
+
         if result is None:
             raise LLMProviderError("All LLM providers failed to generate response")
-        
+
         # Cache the result
         if self.cache:
             self.cache.set(cache_key, result)
-        
+
         return result
     
     def explain_concept(self, concept: str, student_level: str = "intermediate") -> str:
         """
         Generate educational explanation for attention mechanism concepts.
-        
+
         Args:
             concept: The concept to explain (e.g., "scaled dot-product attention")
             student_level: Student difficulty level (beginner, intermediate, advanced)
-        
+
         Returns:
             Educational explanation string
         """
         prompt = self.prompt_templates.create_concept_explanation_prompt(concept, student_level)
-        
-        for provider_name, provider in [("primary", self.primary_provider), 
+
+        for provider_name, provider in [("primary", self.primary_provider),
                                        ("fallback", self.fallback_provider)]:
             if provider is None:
                 continue
-                
+
             try:
                 response = provider.generate_response(prompt, "educational")
                 return response
             except Exception as e:
-                self.logger.warning(f"{provider_name} provider failed for concept explanation: {e}")
                 continue
-        
+
         raise LLMProviderError("All LLM providers failed to generate concept explanation")
     
     def generate_test_cases(self, function_name: str, function_signature: str) -> List[Dict[str, Any]]:
         """
         Generate test cases for attention mechanism functions.
-        
+
         Args:
             function_name: Name of the function
             function_signature: Function signature and documentation
-        
+
         Returns:
             List of test case dictionaries
         """
         prompt = self.prompt_templates.create_test_generation_prompt(function_name, function_signature)
-        
-        for provider_name, provider in [("primary", self.primary_provider), 
+
+        for provider_name, provider in [("primary", self.primary_provider),
                                        ("fallback", self.fallback_provider)]:
             if provider is None:
                 continue
-                
+
             try:
                 response = provider.generate_response(prompt, "code_explanation")
                 return self._parse_test_cases_response(response)
             except Exception as e:
-                self.logger.warning(f"{provider_name} provider failed for test generation: {e}")
                 continue
-        
+
         raise LLMProviderError("All LLM providers failed to generate test cases")
     
     def _generate_cache_key(self, student_code: str, reference_code: str, function_name: str) -> str:
@@ -248,17 +228,18 @@ class LLMEvaluator:
         try:
             # Try to parse as JSON first
             if response.strip().startswith('{'):
-                return json.loads(response)
-        except json.JSONDecodeError:
+                parsed = json.loads(response)
+                return parsed
+        except json.JSONDecodeError as e:
             pass
-        
+
         # If not JSON, parse structured text response
         return self._parse_text_response(response, function_name)
-    
+
     def _parse_text_response(self, response: str, function_name: str) -> Dict[str, Any]:
         """Parse text response into structured format"""
         lines = response.split('\n')
-        
+
         result = {
             "comparison_result": "unknown",
             "educational_feedback": response,
@@ -268,7 +249,7 @@ class LLMEvaluator:
             "function_name": function_name,
             "timestamp": datetime.now().isoformat()
         }
-        
+
         # Try to extract key information from text
         for line in lines:
             line = line.strip().lower()
@@ -281,7 +262,7 @@ class LLMEvaluator:
             elif "partially" in line or "almost" in line:
                 result["comparison_result"] = "partially_correct"
                 result["score"] = 60
-        
+
         return result
     
     def _parse_test_cases_response(self, response: str) -> List[Dict[str, Any]]:
@@ -292,10 +273,9 @@ class LLMEvaluator:
 
 class LLMProvider:
     """Base class for LLM providers"""
-    
-    def __init__(self, config: Dict[str, Any], logger: logging.Logger):
+
+    def __init__(self, config: Dict[str, Any]):
         self.config = config
-        self.logger = logger
     
     def generate_response(self, prompt: str, model_type: str = "default") -> str:
         """Generate response from LLM"""
@@ -308,15 +288,16 @@ class LLMProvider:
 
 class OllamaProvider(LLMProvider):
     """Ollama provider implementation"""
-    
+
     def generate_response(self, prompt: str, model_type: str = "default") -> str:
         """Generate response using Ollama API"""
         model = self._get_model(model_type)
         url = f"{self.config['base_url']}/api/generate"
-        
+
         payload = {
             "model": model,
             "prompt": prompt,
+            "format": "json",
             "stream": self.config["parameters"]["stream"],
             "options": {
                 "temperature": self.config["parameters"]["temperature"],
@@ -324,21 +305,23 @@ class OllamaProvider(LLMProvider):
                 "top_p": self.config["parameters"]["top_p"]
             }
         }
-        
+
         for attempt in range(self.config["retry_attempts"]):
             try:
                 response = requests.post(
-                    url, 
-                    json=payload, 
+                    url,
+                    json=payload,
                     timeout=self.config["timeout"]
                 )
+
                 response.raise_for_status()
-                
+
                 result = response.json()
-                return result.get("response", "")
-                
+                response_text = result.get("response", "")
+
+                return response_text
+
             except Exception as e:
-                self.logger.warning(f"Ollama attempt {attempt + 1} failed: {e}")
                 if attempt == self.config["retry_attempts"] - 1:
                     raise LLMProviderError(f"Ollama provider failed after {self.config['retry_attempts']} attempts: {e}")
                 time.sleep(2 ** attempt)  # Exponential backoff
@@ -346,18 +329,18 @@ class OllamaProvider(LLMProvider):
 
 class OpenAIProvider(LLMProvider):
     """OpenAI provider implementation"""
-    
-    def __init__(self, config: Dict[str, Any], logger: logging.Logger):
-        super().__init__(config, logger)
+
+    def __init__(self, config: Dict[str, Any]):
+        super().__init__(config)
         api_key = os.environ.get('OPENAI_API_KEY')
         if not api_key:
             raise LLMProviderError("OpenAI API key not found in environment variables")
         self.client = openai.Client(api_key=api_key)
-    
+
     def generate_response(self, prompt: str, model_type: str = "default") -> str:
         """Generate response using OpenAI API"""
         model = self._get_model(model_type)
-        
+
         for attempt in range(self.config["retry_attempts"]):
             try:
                 response = self.client.chat.completions.create(
@@ -367,11 +350,12 @@ class OpenAIProvider(LLMProvider):
                     max_tokens=self.config["parameters"]["max_tokens"],
                     top_p=self.config["parameters"]["top_p"]
                 )
-                
-                return response.choices[0].message.content
-                
+
+                response_text = response.choices[0].message.content
+
+                return response_text
+
             except Exception as e:
-                self.logger.warning(f"OpenAI attempt {attempt + 1} failed: {e}")
                 if attempt == self.config["retry_attempts"] - 1:
                     raise LLMProviderError(f"OpenAI provider failed after {self.config['retry_attempts']} attempts: {e}")
                 time.sleep(2 ** attempt)  # Exponential backoff
